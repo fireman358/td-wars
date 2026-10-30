@@ -11,9 +11,18 @@ export const START_LIVES = 20;
 export const AUTO_WAVE_DELAY = 6;
 export const EARLY_BONUS_RATIO = 0.6;
 
-export const SECTORS: SectorDef[] = [
+export type Theme = 'desert' | 'ice' | 'forest' | 'city';
+
+export interface SectorDefX extends SectorDef {
+  theme: Theme;
+  subtitle: string;
+}
+
+export const SECTORS: SectorDefX[] = [
   {
-    name: 'Secteur 1 — Orbite de Jakda',
+    name: 'Dunes de Jakda',
+    subtitle: 'Désert binaire — 1 voie',
+    theme: 'desert',
     paths: [
       [
         { x: -40, y: 110 },
@@ -26,10 +35,34 @@ export const SECTORS: SectorDef[] = [
         { x: 1000, y: 330 },
       ],
     ],
-    waves: [] as Wave[],
+    waves: [],
   },
   {
-    name: 'Secteur 2 — Ceinture de Groma',
+    name: 'Plaines gelées de Hotha',
+    subtitle: 'Glaces éternelles — 1 voie, labyrinthe serré',
+    theme: 'ice',
+    paths: [
+      [
+        { x: -40, y: 60 },
+        { x: 160, y: 60 },
+        { x: 160, y: 250 },
+        { x: 360, y: 250 },
+        { x: 360, y: 90 },
+        { x: 560, y: 90 },
+        { x: 560, y: 300 },
+        { x: 760, y: 300 },
+        { x: 760, y: 140 },
+        { x: 900, y: 140 },
+        { x: 900, y: 460 },
+        { x: 1000, y: 460 },
+      ],
+    ],
+    waves: [],
+  },
+  {
+    name: 'Canopées de Wuukir',
+    subtitle: 'Jungle primitive — 2 voies',
+    theme: 'forest',
     paths: [
       [
         { x: -40, y: 120 },
@@ -41,37 +74,23 @@ export const SECTORS: SectorDef[] = [
         { x: 700, y: 420 },
         { x: 1000, y: 420 },
       ],
-    ],
-    waves: [] as Wave[],
-  },
-  {
-    name: 'Secteur 3 — Nébuleuse Vraau',
-    paths: [
       [
-        { x: -40, y: 80 },
-        { x: 180, y: 80 },
-        { x: 180, y: 300 },
-        { x: 420, y: 300 },
-        { x: 420, y: 460 },
-        { x: 760, y: 460 },
-        { x: 760, y: 200 },
-        { x: 1000, y: 200 },
-      ],
-      [
-        { x: -40, y: 500 },
-        { x: 300, y: 500 },
-        { x: 300, y: 240 },
-        { x: 540, y: 240 },
-        { x: 540, y: 80 },
-        { x: 860, y: 80 },
-        { x: 860, y: 340 },
-        { x: 1000, y: 340 },
+        { x: -40, y: 460 },
+        { x: 120, y: 460 },
+        { x: 120, y: 200 },
+        { x: 560, y: 200 },
+        { x: 560, y: 480 },
+        { x: 820, y: 480 },
+        { x: 820, y: 80 },
+        { x: 1000, y: 80 },
       ],
     ],
-    waves: [] as Wave[],
+    waves: [],
   },
   {
-    name: 'Secteur 4 — Cœur du Nova Empire',
+    name: 'Mégalopole de Corvann',
+    subtitle: 'Cité-planète — 3 voies',
+    theme: 'city',
     paths: [
       [
         { x: -40, y: 270 },
@@ -103,7 +122,7 @@ export const SECTORS: SectorDef[] = [
         { x: 1000, y: 180 },
       ],
     ],
-    waves: [] as Wave[],
+    waves: [],
   },
 ];
 
@@ -245,61 +264,57 @@ function g(id: EnemyKindId, count: number, interval: number, delay: number, hpSc
   return { id, count, interval, delay, hpScale, speedScale };
 }
 
-function wave(name: string, entries: number, reward: number, ...groups: WaveGroup[]): Wave {
-  return { name, entries, reward, groups };
+function genWave(w: number, d: number, entries: number): Wave {
+  const m = (1 + d * 0.55) * (1 + w * 0.09);
+  const sp = 1 + d * 0.1 + w * 0.004;
+  const reward = 30 + w * 8 + d * 60;
+  const boss = w % 5 === 0;
+  let groups: WaveGroup[];
+  let name: string;
+
+  if (w === 25) {
+    name = 'Boss : Destroyer stellaire';
+    groups = [
+      g('destroyer', 1, 0, 0, m * 0.9, sp),
+      g('walker', 2 + d * 2, 3.5, 6, m * 0.8, sp),
+      g('fighter', 18, 0.4, 12, m, sp),
+      g('healer', 3, 5, 20, m * 0.7, sp),
+    ];
+  } else if (boss) {
+    name = w % 10 === 5 ? 'Boss : Charge blindée' : w === 20 ? 'Boss : Marcheurs d\'assaut' : 'Boss : Assaut lourd';
+    if (w === 5) {
+      groups = [g('tank', 1 + d, 3, 0, m), g('soldier', 12, 0.55, 4, m), g('drone', 10, 0.6, 10, m * 1.2)];
+    } else if (w === 10) {
+      groups = [g('healer', 1 + Math.floor(d / 2), 4, 0, m * 0.8), g('tank', 3 + d, 2.5, 3, m), g('fighter', 12, 0.5, 10, m)];
+    } else if (w === 15) {
+      groups = [g('walker', 2 + d, 4, 0, m * 0.8), g('healer', 1, 0, 6, m * 0.7), g('soldier', 16, 0.45, 10, m)];
+    } else {
+      groups = [g('walker', 3 + d, 3, 0, m * 0.9), g('stealth', 12, 0.7, 6, m), g('fighter', 16, 0.4, 14, m)];
+    }
+  } else {
+    const p = w % 5;
+    if (p === 1) {
+      name = w < 10 ? 'Patrouille légère' : 'Escadron rapide';
+      groups = [g(w % 6 === 1 ? 'drone' : 'fighter', 8 + w / 3, 0.55, 0, m), g('drone', 8, 0.7, 5, m * 1.1)];
+    } else if (p === 2) {
+      name = 'Troupes au sol';
+      groups = [g('soldier', 10 + w / 2, 0.5, 0, m), g(w % 4 === 2 ? 'drone' : 'fighter', 8, 0.6, 6, m)];
+    } else if (p === 3) {
+      name = 'Force de frappe';
+      groups = [g('fighter', 12 + w / 3, 0.45, 0, m), g('stealth', 5 + w / 6, 1.1, 5, m)];
+    } else {
+      name = 'Blindage lourd';
+      groups = [g('tank', 3 + w / 5, 2, 0, m), g('soldier', 12, 0.5, 4, m), g(w % 3 === 4 ? 'healer' : 'stealth', 4, 1.2, 8, m)];
+    }
+  }
+  return { name, entries, groups, reward };
 }
 
-SECTORS[0].waves = [
-  wave('Premiers vols', 1, 30, g('drone', 6, 1.1, 0)),
-  wave('Patrouille légère', 1, 35, g('drone', 8, 0.9, 0), g('soldier', 3, 1.4, 5)),
-  wave('Troupes au sol', 1, 40, g('soldier', 8, 1.0, 0), g('drone', 6, 0.8, 8)),
-  wave('Essaim rapide', 1, 50, g('fighter', 8, 0.7, 0), g('drone', 8, 0.7, 3)),
-  wave('Boss : Char renforcé', 1, 80, g('soldier', 6, 1.0, 0), g('tank', 1, 0, 6), g('drone', 8, 0.8, 10)),
-  wave('Blindage lourd', 1, 60, g('soldier', 8, 0.9, 0), g('tank', 2, 4, 6, 1.1)),
-  wave('Force de frappe', 1, 65, g('fighter', 10, 0.6, 0), g('soldier', 8, 1.0, 5)),
-  wave('Ombres dans le ciel', 1, 70, g('stealth', 5, 1.6, 0), g('drone', 10, 0.7, 6)),
-  wave('Marche implacable', 1, 85, g('walker', 2, 6, 0, 0.8), g('soldier', 10, 0.8, 4)),
-  wave('Boss : Régénérateur', 1, 110, g('healer', 1, 0, 0), g('tank', 3, 3, 2), g('fighter', 8, 0.6, 8)),
-  wave('Tempête d\'ions', 1, 90, g('stealth', 8, 1.2, 0), g('fighter', 10, 0.6, 6)),
-  wave('Colonne blindée', 1, 100, g('tank', 5, 2.4, 0, 1.1), g('soldier', 12, 0.7, 5)),
-  wave('Chirurgie mobile', 1, 110, g('healer', 2, 5, 0), g('walker', 2, 6, 3, 0.85), g('drone', 12, 0.5, 10)),
-  wave('Ciel noir de chasseurs', 1, 120, g('fighter', 18, 0.45, 0), g('stealth', 6, 1.0, 8)),
-  wave('Boss : Marcheur d\'assaut', 1, 160, g('walker', 3, 5, 0, 1.0), g('healer', 2, 6, 6), g('soldier', 12, 0.6, 10)),
-  wave('Ruée générale', 1, 130, g('drone', 16, 0.35, 0), g('soldier', 12, 0.6, 4), g('fighter', 10, 0.5, 12)),
-  wave('Mur d\'acier', 1, 140, g('tank', 8, 1.8, 0, 1.15), g('walker', 2, 6, 8, 0.9)),
-  wave('Sabotage furtif', 1, 150, g('stealth', 12, 0.9, 0, 1.1), g('healer', 2, 5, 6), g('fighter', 12, 0.5, 10)),
-  wave('Légion complète', 1, 170, g('soldier', 16, 0.5, 0, 1.2), g('tank', 6, 2, 4, 1.2), g('fighter', 10, 0.5, 14)),
-  wave('Boss : Jumeaux régénérateurs', 1, 210, g('healer', 2, 4, 0), g('walker', 4, 4, 3, 1.0), g('tank', 6, 1.6, 10, 1.2)),
-  wave('Éclipse totale', 1, 190, g('stealth', 14, 0.7, 0, 1.2), g('fighter', 16, 0.4, 6)),
-  wave('Tremblement de sol', 1, 200, g('walker', 6, 3.5, 0, 1.1), g('tank', 8, 1.4, 5, 1.25)),
-  wave('Dernière garde', 1, 220, g('healer', 3, 4, 0), g('soldier', 20, 0.4, 4, 1.3), g('stealth', 10, 0.8, 10, 1.2)),
-  wave('Hypervitesse', 1, 240, g('fighter', 30, 0.3, 0, 1.3), g('drone', 20, 0.3, 8, 2.0), g('stealth', 12, 0.7, 14, 1.2)),
-  wave('Boss final : Destroyer stellaire', 1, 500, g('destroyer', 1, 0, 0), g('walker', 4, 4, 8, 1.1), g('fighter', 16, 0.45, 12, 1.2), g('healer', 2, 6, 20)),
-];
-
-SECTORS[1].waves = [
-  wave('Ceinture : premier contact', 1, 60, g('drone', 10, 0.7, 0), g('soldier', 6, 1.0, 5, 1.2)),
-  wave('Essaim de sonde', 1, 70, g('drone', 14, 0.5, 0, 1.3), g('fighter', 8, 0.6, 6, 1.2)),
-  wave('Phalange de troopers', 1, 80, g('soldier', 14, 0.6, 0, 1.4), g('tank', 2, 4, 8, 1.3)),
-  wave('Pincement nord', 1, 90, g('fighter', 12, 0.5, 0, 1.4), g('stealth', 6, 1.2, 5, 1.3)),
-  wave('Boss : Bélier lunaire', 1, 130, g('tank', 3, 3, 0, 1.5), g('soldier', 12, 0.6, 6, 1.4), g('healer', 1, 0, 10)),
-];
-
-SECTORS[2].waves = [
-  wave('Assaut double', 2, 140, g('drone', 10, 0.5, 0, 1.5), g('soldier', 10, 0.6, 0, 1.5)),
-  wave('Tenaille blindée', 2, 150, g('tank', 4, 2.5, 0, 1.6), g('fighter', 10, 0.5, 3, 1.5)),
-  wave('Deux fronts furtifs', 2, 160, g('stealth', 8, 1.0, 0, 1.6), g('stealth', 8, 1.0, 4, 1.6), g('drone', 12, 0.5, 8, 1.6)),
-  wave('Croisement de marcheurs', 2, 170, g('walker', 3, 4, 0, 1.4), g('walker', 3, 4, 5, 1.4), g('soldier', 14, 0.5, 10, 1.6)),
-  wave('Boss : Jumeaux de fer', 2, 220, g('walker', 2, 4, 0, 1.6), g('walker', 2, 4, 4, 1.6), g('healer', 2, 5, 8), g('fighter', 12, 0.45, 12, 1.6)),
-];
-
-SECTORS[3].waves = [
-  wave('Triple assaut léger', 3, 180, g('drone', 12, 0.45, 0, 1.7), g('fighter', 10, 0.45, 2, 1.7), g('soldier', 10, 0.5, 4, 1.7)),
-  wave('Triangle blindé', 3, 200, g('tank', 4, 2.0, 0, 1.8), g('tank', 4, 2.0, 3, 1.8), g('stealth', 10, 0.8, 6, 1.7)),
-  wave('Étreinte de la nébuleuse', 3, 220, g('walker', 4, 3, 0, 1.6), g('fighter', 14, 0.4, 3, 1.8), g('healer', 2, 4, 6)),
-  wave('Trois fronts, une armée', 3, 250, g('soldier', 16, 0.4, 0, 2.0), g('tank', 5, 1.6, 3, 1.9), g('stealth', 12, 0.6, 6, 1.8)),
-  wave('Boss final : Trinity Destroyer', 3, 600, g('destroyer', 1, 0, 0, 1.2), g('walker', 4, 3.5, 6, 1.7), g('fighter', 16, 0.4, 10, 1.8), g('healer', 3, 5, 16)),
-];
+for (let s = 0; s < SECTORS.length; s++) {
+  const entries = SECTORS[s].paths.length;
+  SECTORS[s].waves = Array.from({ length: 25 }, (_, i) => genWave(i + 1, s, entries));
+}
 
 export const ALL_WAVES: Wave[] = SECTORS.flatMap(s => s.waves);
 export const MAX_WAVES = ALL_WAVES.length;
+export const WAVES_PER_SECTOR = 25;

@@ -121,7 +121,7 @@ function showSectorIntro() {
   intro.id = 'sector-intro';
   intro.innerHTML = `
     <h2>${SECTORS[engine.sectorIndex].name}</h2>
-    <p>${SECTORS[engine.sectorIndex].paths.length} entrée${SECTORS[engine.sectorIndex].paths.length > 1 ? 's' : ''} — ${SECTORS[engine.sectorIndex].waves.length} vagues</p>`;
+    <p>${(SECTORS[engine.sectorIndex] as any).subtitle}</p>`;
   document.getElementById('game-wrap')!.appendChild(intro);
   setTimeout(() => intro.classList.add('show'), 10);
   setTimeout(() => {
@@ -152,6 +152,7 @@ engine.onEvent = (e) => {
       break;
     case 'sector':
       elSector.textContent = SECTORS[engine.sectorIndex].name;
+      if (engine.sectorIndex > 0) renderer.hyperT = 1.4;
       showSectorIntro();
       refreshHud();
       break;

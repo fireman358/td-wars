@@ -12,12 +12,22 @@ interface Star {
   speed: number;
 }
 
+interface Flake {
+  x: number;
+  y: number;
+  r: number;
+  vy: number;
+  drift: number;
+}
+
 export class Renderer {
   ctx: CanvasRenderingContext2D;
   selectedTower: Tower | null = null;
   buildPreview: { kindId: string; valid: boolean } | null = null;
   mouse: Vec = { x: -100, y: -100 };
+  hyperT = 0;
   private stars: Star[] = [];
+  private flakes: Flake[] = [];
   private t = 0;
 
   constructor(canvas: HTMLCanvasElement, private engine: Engine) {
@@ -31,13 +41,22 @@ export class Renderer {
         speed: 0.5 + Math.random() * 2,
       });
     }
+    for (let i = 0; i < 60; i++) {
+      this.flakes.push({
+        x: Math.random() * GRID_W,
+        y: Math.random() * GRID_H,
+        r: Math.random() * 1.6 + 0.6,
+        vy: 12 + Math.random() * 28,
+        drift: Math.random() * 20 - 10,
+      });
+    }
   }
 
   draw(dt: number) {
     this.t += dt;
+    if (this.hyperT > 0) this.hyperT -= dt;
     const ctx = this.ctx;
-    this.drawSpace(ctx);
-    this.drawPlanet(ctx);
+    this.drawTheme(ctx);
     this.drawPaths(ctx);
     this.drawRangePreview(ctx);
     for (const t of this.engine.towers) this.drawTower(ctx, t);
@@ -47,31 +66,26 @@ export class Renderer {
     this.drawEffects(ctx);
     if (this.selectedTower) this.drawSelection(ctx);
     this.drawPortals(ctx);
+    if (this.hyperT > 0) this.drawHyperspace(ctx, dt);
   }
 
-  private drawSpace(ctx: CanvasRenderingContext2D) {
-    const g = ctx.createLinearGradient(0, 0, GRID_W, GRID_H);
-    g.addColorStop(0, '#070b1c');
-    g.addColorStop(0.5, '#0a1030');
-    g.addColorStop(1, '#12081f');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, GRID_W, GRID_H);
+  private theme(): string {
+    return SECTORS[this.engine.sectorIndex].theme;
+  }
 
-    const neb1 = ctx.createRadialGradient(760, 120, 10, 760, 120, 300);
-    neb1.addColorStop(0, 'rgba(90, 40, 160, 0.16)');
-    neb1.addColorStop(1, 'rgba(90, 40, 160, 0)');
-    ctx.fillStyle = neb1;
-    ctx.fillRect(0, 0, GRID_W, GRID_H);
+  private drawTheme(ctx: CanvasRenderingContext2D) {
+    switch (this.theme()) {
+      case 'desert': this.drawDesert(ctx); break;
+      case 'ice': this.drawIce(ctx); break;
+      case 'forest': this.drawForest(ctx); break;
+      case 'city': this.drawCity(ctx); break;
+    }
+  }
 
-    const neb2 = ctx.createRadialGradient(140, 440, 10, 140, 440, 260);
-    neb2.addColorStop(0, 'rgba(30, 90, 170, 0.14)');
-    neb2.addColorStop(1, 'rgba(30, 90, 170, 0)');
-    ctx.fillStyle = neb2;
-    ctx.fillRect(0, 0, GRID_W, GRID_H);
-
+  private drawStars(ctx: CanvasRenderingContext2D, alpha = 1) {
     for (const s of this.stars) {
       const tw = 0.4 + 0.6 * Math.abs(Math.sin(this.t * s.speed + s.phase));
-      ctx.globalAlpha = tw;
+      ctx.globalAlpha = tw * alpha;
       ctx.fillStyle = '#dce8ff';
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
@@ -80,37 +94,176 @@ export class Renderer {
     ctx.globalAlpha = 1;
   }
 
-  private drawPlanet(ctx: CanvasRenderingContext2D) {
-    const x = 855;
-    const y = 415;
-    const r = 88;
-    ctx.save();
-    const pg = ctx.createRadialGradient(x - r * 0.35, y - r * 0.35, r * 0.15, x, y, r);
-    pg.addColorStop(0, '#c98a4b');
-    pg.addColorStop(0.55, '#8a5426');
-    pg.addColorStop(1, '#3a2010');
-    ctx.fillStyle = pg;
+  private drawDesert(ctx: CanvasRenderingContext2D) {
+    const g = ctx.createLinearGradient(0, 0, 0, GRID_H);
+    g.addColorStop(0, '#2b1a3f');
+    g.addColorStop(0.45, '#8a4a2f');
+    g.addColorStop(0.7, '#d98e4a');
+    g.addColorStop(1, '#e8b36a');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, GRID_W, GRID_H);
+    this.drawStars(ctx, 0.5);
+    const s1 = ctx.createRadialGradient(700, 110, 5, 700, 110, 60);
+    s1.addColorStop(0, 'rgba(255, 240, 190, 0.95)');
+    s1.addColorStop(1, 'rgba(255, 240, 190, 0)');
+    ctx.fillStyle = s1;
     ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.arc(700, 110, 60, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 0.25;
-    ctx.fillStyle = '#5c3213';
-    for (let i = 0; i < 5; i++) {
+    const s2 = ctx.createRadialGradient(770, 160, 4, 770, 160, 40);
+    s2.addColorStop(0, 'rgba(255, 190, 120, 0.9)');
+    s2.addColorStop(1, 'rgba(255, 190, 120, 0)');
+    ctx.fillStyle = s2;
+    ctx.beginPath();
+    ctx.arc(770, 160, 40, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(160, 90, 40, 0.5)';
+    ctx.beginPath();
+    ctx.moveTo(0, 470);
+    ctx.quadraticCurveTo(180, 400, 380, 480);
+    ctx.quadraticCurveTo(560, 540, 760, 470);
+    ctx.lineTo(GRID_W, 540);
+    ctx.lineTo(0, 540);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(120, 65, 30, 0.45)';
+    ctx.beginPath();
+    ctx.moveTo(0, 510);
+    ctx.quadraticCurveTo(240, 460, 480, 520);
+    ctx.quadraticCurveTo(720, 560, GRID_W, 505);
+    ctx.lineTo(GRID_W, 540);
+    ctx.lineTo(0, 540);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  private drawIce(ctx: CanvasRenderingContext2D) {
+    const g = ctx.createLinearGradient(0, 0, 0, GRID_H);
+    g.addColorStop(0, '#0a1830');
+    g.addColorStop(0.5, '#1e3a5f');
+    g.addColorStop(1, '#7a9cbf');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, GRID_W, GRID_H);
+    this.drawStars(ctx, 0.6);
+    const aur = ctx.createLinearGradient(0, 0, 0, 220);
+    aur.addColorStop(0, 'rgba(100, 220, 180, 0)');
+    aur.addColorStop(0.6, 'rgba(100, 220, 180, 0.12)');
+    aur.addColorStop(1, 'rgba(100, 220, 180, 0)');
+    ctx.fillStyle = aur;
+    ctx.fillRect(0, 0, GRID_W, 240);
+    ctx.fillStyle = 'rgba(230, 240, 250, 0.85)';
+    ctx.beginPath();
+    ctx.moveTo(0, 460);
+    ctx.quadraticCurveTo(200, 420, 420, 470);
+    ctx.quadraticCurveTo(650, 515, 880, 455);
+    ctx.lineTo(GRID_W, 540);
+    ctx.lineTo(0, 540);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(180, 205, 225, 0.6)';
+    for (const [bx, bh] of [[80, 60], [300, 42], [620, 66], [850, 50]] as const) {
       ctx.beginPath();
-      ctx.ellipse(x, y - 40 + i * 26, r * 0.72, 9, -0.1, 0, Math.PI * 2);
+      ctx.moveTo(bx - 30, 470);
+      ctx.lineTo(bx, 470 - bh);
+      ctx.lineTo(bx + 30, 470);
+      ctx.closePath();
       ctx.fill();
     }
-    ctx.globalAlpha = 1;
-    const at = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
-    at.addColorStop(0, 'rgba(120, 170, 255, 0.35)');
-    at.addColorStop(0.5, 'rgba(120, 170, 255, 0.05)');
-    at.addColorStop(1, 'rgba(120, 170, 255, 0)');
-    ctx.strokeStyle = at;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.ellipse(x, y, r + 14, (r + 14) * 0.28, -0.35, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+    for (const f of this.flakes) {
+      f.y += f.vy * 0.016;
+      f.x += Math.sin(this.t + f.drift) * 0.3;
+      if (f.y > GRID_H) f.y = -4;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  private drawForest(ctx: CanvasRenderingContext2D) {
+    const g = ctx.createLinearGradient(0, 0, 0, GRID_H);
+    g.addColorStop(0, '#0a1f14');
+    g.addColorStop(0.6, '#14381f');
+    g.addColorStop(1, '#1e4a2a');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, GRID_W, GRID_H);
+    const glow = ctx.createRadialGradient(480, 80, 20, 480, 80, 400);
+    glow.addColorStop(0, 'rgba(180, 220, 130, 0.15)');
+    glow.addColorStop(1, 'rgba(180, 220, 130, 0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, GRID_W, GRID_H);
+    this.drawStars(ctx, 0.25);
+    ctx.fillStyle = 'rgba(20, 45, 26, 0.9)';
+    for (const [tx, tw] of [[60, 46], [180, 60], [330, 40], [700, 55], [860, 48], [940, 62]] as const) {
+      ctx.beginPath();
+      ctx.moveTo(tx - tw / 2, GRID_H);
+      ctx.lineTo(tx - tw / 6, GRID_H * 0.25);
+      ctx.lineTo(tx + tw / 6, GRID_H * 0.25);
+      ctx.lineTo(tx + tw / 2, GRID_H);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = 'rgba(60, 110, 60, 0.5)';
+    for (const [cx, cy, r] of [[100, 60, 50], [250, 40, 65], [820, 55, 58], [500, 30, 40]] as const) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  private drawCity(ctx: CanvasRenderingContext2D) {
+    const g = ctx.createLinearGradient(0, 0, 0, GRID_H);
+    g.addColorStop(0, '#05070f');
+    g.addColorStop(0.55, '#0c1226');
+    g.addColorStop(1, '#1a2340');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, GRID_W, GRID_H);
+    this.drawStars(ctx, 0.9);
+    const neb = ctx.createRadialGradient(200, 100, 10, 200, 100, 260);
+    neb.addColorStop(0, 'rgba(90, 40, 160, 0.14)');
+    neb.addColorStop(1, 'rgba(90, 40, 160, 0)');
+    ctx.fillStyle = neb;
+    ctx.fillRect(0, 0, GRID_W, GRID_H);
+    for (let i = 0; i < 18; i++) {
+      const bw = 34 + ((i * 53) % 50);
+      const bh = 90 + ((i * 137) % 200);
+      const bx = (i * 61) % (GRID_W + 40) - 20;
+      ctx.fillStyle = i % 2 ? '#0b1020' : '#0e1530';
+      ctx.fillRect(bx, GRID_H - bh, bw, bh);
+      ctx.fillStyle = 'rgba(255, 220, 120, 0.75)';
+      for (let wy = GRID_H - bh + 10; wy < GRID_H - 14; wy += 16) {
+        for (let wx = bx + 6; wx < bx + bw - 6; wx += 12) {
+          if ((wx * 7 + wy * 13) % 5 < 2) {
+            ctx.globalAlpha = 0.3 + 0.5 * Math.abs(Math.sin(this.t * 0.8 + wx + wy));
+            ctx.fillRect(wx, wy, 3, 4);
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  private drawHyperspace(ctx: CanvasRenderingContext2D, dt: number) {
+    const k = Math.min(1, this.hyperT / 0.35);
+    const cx = GRID_W / 2;
+    const cy = GRID_H / 2;
+    ctx.fillStyle = `rgba(2, 4, 12, ${0.85 * k})`;
+    ctx.fillRect(0, 0, GRID_W, GRID_H);
+    ctx.save();
+    ctx.translate(cx, cy);
+    for (let i = 0; i < 70; i++) {
+      const a = (i * 137.5 * Math.PI) / 180;
+      const len = 40 + ((i * 31) % 90) * k;
+      const r0 = 30 + ((i * 17) % 120) * (1 - k * 0.3);
+      ctx.strokeStyle = `rgba(200, 225, 255, ${0.35 + 0.5 * k})`;
+      ctx.lineWidth = 1 + k;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * r0, Math.sin(a) * r0);
+      ctx.lineTo(Math.cos(a) * (r0 + len), Math.sin(a) * (r0 + len));
+      ctx.stroke();
+    }
     ctx.restore();
+    void dt;
   }
 
   private drawPaths(ctx: CanvasRenderingContext2D) {
@@ -121,13 +274,13 @@ export class Renderer {
   private drawPath(ctx: CanvasRenderingContext2D, pts: Vec[]) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(40, 70, 120, 0.35)';
+    ctx.strokeStyle = 'rgba(30, 35, 50, 0.55)';
     ctx.lineWidth = PATH_WIDTH + 10;
     this.stroke(ctx, pts);
     ctx.strokeStyle = '#131a2e';
     ctx.lineWidth = PATH_WIDTH;
     this.stroke(ctx, pts);
-    ctx.strokeStyle = 'rgba(100, 150, 230, 0.18)';
+    ctx.strokeStyle = 'rgba(150, 190, 255, 0.16)';
     ctx.lineWidth = 1.5;
     ctx.setLineDash([8, 12]);
     this.stroke(ctx, pts);
@@ -144,11 +297,10 @@ export class Renderer {
   private drawPortals(ctx: CanvasRenderingContext2D) {
     const pts = SECTORS[this.engine.sectorIndex].paths;
     const t = this.t;
-    pts.forEach((p, idx) => {
+    pts.forEach((p) => {
       const start = p[0];
       const x = start.x < 0 ? 12 : start.x;
       const y = start.y;
-      void idx;
       const pulse = 0.5 + 0.5 * Math.sin(t * 3);
       ctx.strokeStyle = `rgba(255, 60, 60, ${0.35 + pulse * 0.4})`;
       ctx.lineWidth = 2;
@@ -166,11 +318,11 @@ export class Renderer {
     ctx.strokeStyle = `rgba(255, 210, 63, ${0.4 + pulse * 0.4})`;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(end.x - 8, end.y, 10 + pulse * 4, 0, Math.PI * 2);
+    ctx.arc(Math.min(end.x, GRID_W - 8), end.y, 10 + pulse * 4, 0, Math.PI * 2);
     ctx.stroke();
     ctx.fillStyle = '#ffd23f';
     ctx.beginPath();
-    ctx.arc(end.x - 8, end.y, 5, 0, Math.PI * 2);
+    ctx.arc(Math.min(end.x, GRID_W - 8), end.y, 5, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -381,7 +533,7 @@ export class Renderer {
         for (const [lx, ly] of [[-r * 0.45, r * 0.35], [r * 0.45, r * 0.35]] as const) {
           ctx.save();
           ctx.translate(lx, ly);
-          ctx.rotate(ly * 0 + step * (lx > 0 ? 1 : -1) * 0.2);
+          ctx.rotate(step * (lx > 0 ? 1 : -1) * 0.2);
           ctx.fillRect(-r * 0.12, 0, r * 0.24, r * 0.75);
           ctx.fillRect(-r * 0.3, r * 0.7, r * 0.6, r * 0.14);
           ctx.restore();
