@@ -288,15 +288,18 @@ body {
 #meta-panel {
   position: absolute;
   inset: 0;
-  background: rgba(4, 6, 12, 0.88);
+  background: rgba(4, 6, 12, 0.92);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 14px;
+  justify-content: flex-start;
+  gap: 16px;
   z-index: 11;
+  padding: 20px 16px;
+  overflow-y: auto;
   backdrop-filter: blur(3px);
 }
+#meta-panel h3 { margin-top: 6px; }
 #meta-panel h3 { color: #ffd23f; letter-spacing: 2px; }
 #meta-panel .meta-points { color: #6fe08a; font-weight: 700; font-size: 15px; }
 .meta-list { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
