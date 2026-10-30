@@ -9,6 +9,7 @@ export const START_CREDITS = 220;
 export const START_LIVES = 20;
 
 export const AUTO_WAVE_DELAY = 6;
+export const SECTOR_BUDGET = [Infinity, 600, 900, 1300];
 export const EARLY_BONUS_RATIO = 0.6;
 
 export type Theme = 'desert' | 'ice' | 'forest' | 'city';

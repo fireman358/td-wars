@@ -1,4 +1,4 @@
-import { ALL_WAVES, AUTO_WAVE_DELAY, EARLY_BONUS_RATIO, ENEMIES, PATH_WIDTH, SECTORS, START_CREDITS, START_LIVES, TOWERS } from './config';
+import { ALL_WAVES, AUTO_WAVE_DELAY, EARLY_BONUS_RATIO, ENEMIES, PATH_WIDTH, SECTOR_BUDGET, SECTORS, START_CREDITS, START_LIVES, TOWERS } from './config';
 import { loadMeta, saveMeta, type MetaState } from './meta';
 import { Enemy } from './enemy';
 import { buildPath, dist, distToPath, genPathPoints, mulberry32, type PathGeom } from './geom';
@@ -104,14 +104,12 @@ export class Engine {
     this.paths = Array.from({ length: Math.max(entries, pathCount, 1) }, () =>
       buildPath(genPathPoints(rng))
     );
-    const removed = this.towers.filter(t =>
-      this.paths.some(p => distToPath(p, t.pos) < PATH_WIDTH / 2 + 14)
-    );
-    for (const t of removed) {
-      this.credits += t.totalSpent;
+    for (const t of this.towers) {
+      this.credits += Math.floor(t.totalSpent * 0.7);
     }
-    if (removed.length > 0) {
-      this.towers = this.towers.filter(t => !removed.includes(t));
+    this.towers = [];
+    if (index > 0) {
+      this.credits = Math.min(this.credits, SECTOR_BUDGET[index]);
     }
     this.waveIndex = this.sectorStartWave(index) - 1;
     this.waveActive = false;

@@ -100,8 +100,9 @@ function showHelp(force = false) {
       ionique et DEMP ; les <b>régénérateurs</b> soignent leurs alliés proches — éliminez-les
       en premier (mode ciblage « plus fort ») ; les ennemis blindés ont un <b>bouclier d'énergie</b>
       bleu (15% des PV) que les grosses frappes percent plus vite que la mitraille.
-      <br><b>Changement de secteur</b> : les tours qui chevauchent le nouveau labyrinthe sont
-      <b>remboursées à 100%</b> (sans la taxe de vente de 30%).
+      <br><b>Changement de secteur</b> : vous changez de planète — <b>toutes vos tours sont retirées</b>
+      et remboursées à 70%, et vos crédits sont plafonnés (600/900/1300) pour que chaque secteur
+      redémarre avec un vrai défi économique.
       <br><b>Mode test</b> 🧪 : sautez directement à un secteur pour l'explorer, avec des
       crédits bonus de départ.
       <br><b>Rejouabilité</b> : le labyrinthe est <b>regénéré aléatoirement</b> à chaque partie —
