@@ -137,9 +137,9 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     tier: 0,
     unlockSector: 0,
     levels: [
-      { cost: 120, income: 14, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
-      { cost: 100, income: 26, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
-      { cost: 170, income: 45, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+      { cost: 120, income: 1, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+      { cost: 100, income: 2, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+      { cost: 170, income: 5, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
     ],
   },
   plasma: {
