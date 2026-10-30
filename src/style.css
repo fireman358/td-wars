@@ -509,3 +509,40 @@ body {
   #meta-panel { padding: 16px 10px; gap: 12px; }
   .perk-card { width: 100%; max-width: 320px; }
 }
+
+#help-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+  z-index: 60;
+  padding: 30px 20px;
+  overflow-y: auto;
+}
+#help-panel h3 { color: #ffd23f; letter-spacing: 3px; }
+.help-box {
+  max-width: 640px;
+  background: #0d1526;
+  border: 1px solid #2c4a7a;
+  border-radius: 12px;
+  padding: 20px 26px;
+  color: #cfe3ff;
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+.help-box h4 { color: #38bdf8; margin: 14px 0 6px; font-size: 14px; }
+.help-box h4:first-child { margin-top: 0; }
+.help-box b { color: #ffd23f; }
+.help-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #a9c4ec;
+  cursor: pointer;
+}
+.help-check input { width: 16px; height: 16px; accent-color: #38bdf8; cursor: pointer; }

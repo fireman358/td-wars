@@ -61,6 +61,62 @@ function resizeCanvas(): void {
   renderer.ctx.imageSmoothingEnabled = true;
 }
 
+const HELP_KEY = 'tdwars_help_seen';
+
+function showHelp(force = false) {
+  const existing = document.getElementById('help-panel');
+  existing?.remove();
+  const panel = document.createElement('div');
+  panel.id = 'help-panel';
+  panel.innerHTML = `
+    <h3>TD WARS — Comment jouer</h3>
+    <div class="help-box">
+      <h4>🎯 Objectif</h4>
+      La flotte du Nova Empire attaque votre base. Empêchez les ennemis d'atteindre
+      la base à droite du parcours : chaque fuite coûte des vies (le bouclier absorbe en premier
+      si vous avez le perk). Survivez aux <b>100 vagues</b> réparties sur <b>4 secteurs</b> :
+      désert, glace, jungle et cité-planète.
+      <h4>🏗️ Construire</h4>
+      Sélectionnez une arme dans la barre en bas, puis cliquez sur le terrain à côté du chemin.
+      Chaque arme se débloque par secteur (T1-T8), se <b>améliore</b> sur 3 niveaux, puis choisit une
+      <b>spécialisation</b>. Cliquez sur une tour placée pour l'améliorer, changer son <b>ciblage</b>
+      ou la vendre. L'Extracteur de moindal génère des crédits <b>pendant les vagues uniquement</b>.
+      <h4>⚔️ Sabrelaser</h4>
+      <b>Maintenez le clic</b> (ou le doigt) pour faire tournoyer un sabrelaser autour du curseur :
+      il endommage les ennemis proches. Énergie limitée, recharge automatique.
+      <h4>⏩ Vagues</h4>
+      La vague suivante démarre automatiquement 6 s après la dernière mort — <b>lancez-la en avance</b>
+      pour un bonus de crédits. L'aperçu dans le panneau de droite montre la composition de la vague
+      suivante. La vitesse du jeu va jusqu'à x5.
+      <h4>⭐ Perks</h4>
+      En fin de partie vous gagnez des points (1 pt / 2 vagues, +10 en victoire) à dépenser dans
+      la boutique ⭐ Perks : crédits, vies, énergie du sabre, bouclier de la base. Effets permanents.
+    </div>
+    <label class="help-check"><input type="checkbox" id="help-dont-show"> Ne plus afficher au lancement</label>
+    <button id="btn-help-close" class="btn primary">Commencer la partie</button>`;
+  document.body.appendChild(panel);
+  const closeBtn = panel.querySelector('#btn-help-close')!;
+  closeBtn.addEventListener('click', () => {
+    const dontShow = (panel.querySelector('#help-dont-show') as HTMLInputElement).checked;
+    if (dontShow) {
+      try { localStorage.setItem(HELP_KEY, '1'); } catch { /* storage indisponible */ }
+    }
+    panel.remove();
+  });
+  void force;
+}
+
+const btnHelp = document.getElementById('btn-help') as HTMLButtonElement;
+btnHelp.addEventListener('click', () => {
+  const p = document.getElementById('help-panel');
+  if (p) p.remove();
+  else showHelp(true);
+});
+
+let helpSeen = false;
+try { helpSeen = localStorage.getItem(HELP_KEY) === '1'; } catch { /* storage indisponible */ }
+if (!helpSeen) showHelp();
+
 btnFullscreen.addEventListener('click', () => {
   const app = document.getElementById('app')!;
   if (document.fullscreenElement) {
