@@ -1,3 +1,5 @@
+export type TargetMode = 'first' | 'close' | 'fast' | 'strong';
+
 export interface Vec {
   x: number;
   y: number;

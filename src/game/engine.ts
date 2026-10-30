@@ -3,7 +3,7 @@ import { Enemy } from './enemy';
 import { buildPath, dist, distToPath, type PathGeom } from './geom';
 import { Sfx } from './sfx';
 import { Tower } from './tower';
-import type { EnemyKindId, TowerKindId, Vec } from './types';
+import type { EnemyKindId, TargetMode, TowerKindId, Vec } from './types';
 
 export interface Projectile {
   pos: Vec;
@@ -358,19 +358,33 @@ export class Engine {
 
   private pickTarget(t: Tower): Enemy | null {
     let best: Enemy | null = null;
-    let bestDist = -1;
+    let bestScore = Infinity;
     for (const e of this.enemies) {
       if (!e.alive) continue;
       if (e.kind.cloak && t.id !== 'ion' && t.id !== 'tesla' && Math.random() > 0.35) {
         continue;
       }
       const dd = dist(t.pos, e.pos);
-      if (dd <= t.stats.range && e.dist > bestDist) {
+      if (dd > t.stats.range) continue;
+      let score: number;
+      switch (t.targetMode) {
+        case 'close': score = dd; break;
+        case 'fast': score = -e.speed; break;
+        case 'strong': score = -e.hp; break;
+        default: score = -e.dist;
+      }
+      if (score < bestScore) {
         best = e;
-        bestDist = e.dist;
+        bestScore = score;
       }
     }
     return best;
+  }
+
+  cycleTargetMode(t: Tower): TargetMode {
+    const order: TargetMode[] = ['first', 'close', 'fast', 'strong'];
+    t.targetMode = order[(order.indexOf(t.targetMode) + 1) % order.length];
+    return t.targetMode;
   }
 
   private fire(t: Tower, target: Enemy) {

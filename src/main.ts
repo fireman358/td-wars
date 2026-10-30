@@ -1,6 +1,6 @@
 import { ALL_WAVES, BUILD_ORDER, GRID_H, GRID_W, SECTORS, TOWERS } from './game/config';
 import { Engine } from './game/engine';
-import type { Tower } from './game/tower';
+import { TARGET_LABELS, type Tower } from './game/tower';
 import { Renderer } from './render';
 import type { TowerKindId, Vec } from './game/types';
 
@@ -102,6 +102,7 @@ function showTowerInfo(t: Tower) {
     ${k.kind === 'splash' ? `<div class="row"><span class="k">Zone</span><span>${s.splashRadius}</span></div>` : ''}
     ${k.kind === 'slow' ? `<div class="row"><span class="k">Ralentit</span><span>x${s.slowFactor}</span></div>` : ''}
     ${k.kind === 'chain' ? `<div class="row"><span class="k">Cibles en chaîne</span><span>${s.chainTargets}</span></div>` : ''}
+    <div class="row"><span class="k">Cible</span><button id="btn-target" class="btn" style="padding:2px 8px;font-size:11px">${TARGET_LABELS[t.targetMode]}</button></div>
     <div class="actions">
       ${up}
       <button id="btn-sell" class="btn">Vendre ${t.sellValue()} cr</button>
@@ -110,6 +111,11 @@ function showTowerInfo(t: Tower) {
   document.getElementById('btn-up')?.addEventListener('click', (ev) => {
     ev.stopPropagation();
     engine.upgradeTower(t);
+    showTowerInfo(t);
+  });
+  document.getElementById('btn-target')!.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    engine.cycleTargetMode(t);
     showTowerInfo(t);
   });
   document.getElementById('btn-sell')!.addEventListener('click', (ev) => {
