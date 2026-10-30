@@ -239,8 +239,8 @@ body {
   backdrop-filter: blur(3px);
 }
 #sector-intro.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-#sector-intro h2 { color: #ffd23f; letter-spacing: 3px; font-size: 24px; margin-bottom: 8px; }
-#sector-intro p { color: #a9c4ec; font-size: 13px; }
+#sector-intro h2 { color: #ffd23f; letter-spacing: 3px; font-size: 24px; margin: 0 0 10px 0; display: block; }
+#sector-intro p.sub { color: #e8f0fc; font-size: 14px; margin: 0; display: block; line-height: 1.4; }
 
 #sector-picker {
   position: absolute;

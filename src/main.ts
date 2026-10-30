@@ -401,20 +401,23 @@ function hideInfo() {
   renderer.selectedTower = null;
 }
 
+let sectorIntroTimers: number[] = [];
+
 function showSectorIntro() {
-  const existing = document.getElementById('sector-intro');
-  existing?.remove();
+  sectorIntroTimers.forEach(clearTimeout);
+  sectorIntroTimers = [];
+  document.querySelectorAll('#sector-intro').forEach(el => el.remove());
   const intro = document.createElement('div');
   intro.id = 'sector-intro';
   intro.innerHTML = `
     <h2>${SECTORS[engine.sectorIndex].name}</h2>
-    <p>${(SECTORS[engine.sectorIndex] as any).subtitle}</p>`;
+    <p class="sub">${(SECTORS[engine.sectorIndex] as any).subtitle}</p>`;
   document.getElementById('canvas-holder')!.appendChild(intro);
-  setTimeout(() => intro.classList.add('show'), 10);
-  setTimeout(() => {
+  sectorIntroTimers.push(window.setTimeout(() => intro.classList.add('show'), 10));
+  sectorIntroTimers.push(window.setTimeout(() => {
     intro.classList.remove('show');
-    setTimeout(() => intro.remove(), 600);
-  }, 3200);
+    sectorIntroTimers.push(window.setTimeout(() => intro.remove(), 600));
+  }, 3200));
 }
 
 function showOverlay(title: string, subtitle: string, msg: string, color: 'gold' | 'red') {
