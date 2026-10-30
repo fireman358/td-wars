@@ -1,6 +1,6 @@
-# Y Wars — Tower Defense
+# TD Wars — Tower Defense
 
-Tower defense spatial dans un univers "space opera" reconnaissable, avec ses propres noms et son identité originale : **Y Wars**.
+Tower defense spatial dans un univers "space opera" reconnaissable, avec ses propres noms et son identité originale : **TD Wars**.
 
 ## 🎮 Concept
 
@@ -57,3 +57,5 @@ npm run preview
 ## 🌐 Jouer en ligne
 
 Le jeu est déployé automatiquement sur GitHub Pages via le workflow `.github/workflows/deploy.yml` dès qu'un commit arrive sur `main`.
+
+Alternativement, sur **Cloudflare Pages** : build command `npm run build`, output directory `dist`.
