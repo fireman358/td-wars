@@ -10,6 +10,7 @@ const renderer = new Renderer(canvas, engine);
 
 const elCredits = document.getElementById('credits')!;
 const elLives = document.getElementById('lives')!;
+const elWave = document.getElementById('wave')!;
 
 const elSector = document.getElementById('sector')!;
 const btnStart = document.getElementById('btn-start') as HTMLButtonElement;
@@ -31,6 +32,7 @@ function posFromEvent(ev: MouseEvent): Vec {
 function refreshHud() {
   elCredits.textContent = String(engine.credits);
   elLives.textContent = String(engine.lives);
+  elWave.textContent = `${engine.waveNumber}/${engine.totalWaves}`;
   elSector.textContent = SECTORS[engine.sectorIndex].name;
   const next = ALL_WAVES[engine.waveIndex + 1];
   if (engine.autoTimer >= 0) {

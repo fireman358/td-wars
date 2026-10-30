@@ -76,6 +76,15 @@ export class Engine {
   loadSector(index: number) {
     this.sectorIndex = index;
     this.paths = SECTORS[index].paths.map(p => buildPath(p));
+    const removed = this.towers.filter(t =>
+      this.paths.some(p => distToPath(p, t.pos) < PATH_WIDTH / 2 + 14)
+    );
+    for (const t of removed) {
+      this.credits += t.totalSpent;
+    }
+    if (removed.length > 0) {
+      this.towers = this.towers.filter(t => !removed.includes(t));
+    }
     this.waveIndex = this.sectorStartWave(index) - 1;
     this.waveActive = false;
     this.spawnQueue = [];
@@ -254,15 +263,18 @@ export class Engine {
       this.emit({ type: 'credits' });
       this.emit({ type: 'wave' });
       this.emit({ type: 'buildbar' });
-      if (this.waveIndex >= ALL_WAVES.length - 1) {
-        this.running = false;
-        this.sfx.victory();
-        this.emit({ type: 'victory' });
-      } else if ((this.waveIndex + 1) % 25 === 0) {
-        this.loadSector(this.sectorIndex + 1);
-        this.emit({ type: 'credits' });
-        this.emit({ type: 'wave' });
-        this.emit({ type: 'buildbar' });
+      const sectorEnd = this.sectorStartWave(this.sectorIndex + 1) - 1;
+      if (this.waveIndex >= sectorEnd) {
+        if (this.sectorIndex >= SECTORS.length - 1) {
+          this.running = false;
+          this.sfx.victory();
+          this.emit({ type: 'victory' });
+        } else {
+          this.loadSector(this.sectorIndex + 1);
+          this.emit({ type: 'credits' });
+          this.emit({ type: 'wave' });
+          this.emit({ type: 'buildbar' });
+        }
       } else {
         this.autoTimer = AUTO_WAVE_DELAY;
       }
