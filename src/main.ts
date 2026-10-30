@@ -44,9 +44,11 @@ function posFromEvent(ev: MouseEvent): Vec {
 function resizeCanvas(): void {
   const dpr = window.devicePixelRatio || 1;
   const wrap = document.getElementById('game-wrap')!;
-  const availW = (wrap.clientWidth || GRID_W) - 240;
+  const isNarrow = window.innerWidth <= 760;
+  const availW = (wrap.clientWidth || GRID_W) - (isNarrow ? 0 : 240);
   const hudH = hud.offsetHeight || 90;
-  const availH = Math.max(240, window.innerHeight - hudH - 116 - 60);
+  const bottomH = window.innerWidth <= 760 ? 250 : 116;
+  const availH = Math.max(200, window.innerHeight - hudH - bottomH - 30);
   const availW2 = Math.max(320, availW);
   const scale = Math.max(0.4, Math.min(availW2 / GRID_W, availH / GRID_H));
   const cssW = GRID_W * scale;
@@ -500,6 +502,34 @@ window.addEventListener('mouseup', () => {
 window.addEventListener('blur', () => {
   engine.saberActive = false;
 });
+canvas.addEventListener('touchstart', (ev) => {
+  const t = ev.touches[0];
+  const pos = posFromEvent(t as unknown as MouseEvent);
+  engine.saberPos = pos;
+  renderer.mouse = pos;
+  engine.saberActive = true;
+  ev.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchmove', (ev) => {
+  const t = ev.touches[0];
+  const pos = posFromEvent(t as unknown as MouseEvent);
+  engine.saberPos = pos;
+  renderer.mouse = pos;
+  if (selectedBuild) renderer.buildPreview = { kindId: selectedBuild, valid: true };
+  ev.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchend', () => {
+  if (engine.saberActive && !lastTapPlaced) {
+    // saber released: if a build is selected, place the tower where released
+    if (selectedBuild) {
+      engine.placeTower(selectedBuild, engine.saberPos);
+      refreshBuildBar();
+    }
+  }
+  engine.saberActive = false;
+  lastTapPlaced = false;
+});
+let lastTapPlaced = false;
 canvas.addEventListener('mouseleave', () => {
   renderer.buildPreview = null;
 });

@@ -469,3 +469,43 @@ body {
 #site-footer a { color: #38bdf8; text-decoration: none; }
 #site-footer a.muted { color: #9a9a9a; font-weight: 400; }
 #site-footer .sep { color: #4a4a4a; }
+
+/* ===== Mobile (GSM) ===== */
+@media (max-width: 760px) {
+  body { padding: 6px; }
+  #app { width: 100%; }
+  #hud { padding: 8px 10px; gap: 6px; }
+  .hud-row { flex-wrap: wrap; gap: 8px; }
+  .brand { font-size: 15px; }
+  .hud-stats { gap: 10px; width: 100%; justify-content: space-between; }
+  .stat-val { font-size: 13px; }
+  .sector { max-width: 100%; font-size: 11px; order: 3; flex-basis: 100%; }
+  .hud-saber { margin-left: auto; }
+  .hud-controls { flex-direction: column; gap: 6px; }
+  #btn-start { min-width: 0; width: 100%; padding: 9px; }
+  .hud-btn-group { width: 100%; }
+  .hud-btn-group .btn { flex: 1; padding: 6px 2px; font-size: 11px; }
+
+  #play-row { flex-direction: column; }
+  #side-panel {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px;
+    border-left: none;
+    border-top: 1px solid #1c2740;
+    order: 2;
+  }
+  #info-panel { flex: 1 1 100%; font-size: 12px; padding: 8px 10px; }
+  #wave-preview { flex: 1 1 100%; font-size: 12px; padding: 8px 10px; }
+
+  #bottom-bar { height: auto; overflow: visible; }
+  #build-bar { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  #studio-splash .splash-logo { font-size: 34px; gap: 10px; }
+  .splash-star { width: 34px; height: 34px; }
+  #site-footer { flex-wrap: wrap; font-size: 11px; gap: 6px; padding: 8px 0 2px; }
+  #meta-panel { padding: 16px 10px; gap: 12px; }
+  .perk-card { width: 100%; max-width: 320px; }
+}
