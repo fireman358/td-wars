@@ -133,8 +133,8 @@ export class Renderer {
     const theme = this.theme();
     for (let i = 0; i < 12; i++) {
       const p = seeded(i);
-      const near = SECTORS[this.engine.sectorIndex].paths.some(
-        (path) => path.some((pt, j) => j < path.length && Math.hypot(pt.x - p.x, pt.y - p.y) < 60)
+      const near = this.engine.paths.some(
+        (pg) => pg.pts.some((pt, j) => j < pg.pts.length && Math.hypot(pt.x - p.x, pt.y - p.y) < 60)
       );
       if (near) continue;
       ctx.save();
@@ -359,8 +359,7 @@ export class Renderer {
   }
 
   private drawPaths(ctx: CanvasRenderingContext2D) {
-    const pts = SECTORS[this.engine.sectorIndex].paths;
-    for (const p of pts) this.drawPath(ctx, p);
+    for (const p of this.engine.paths) this.drawPath(ctx, p.pts);
   }
 
   private drawPath(ctx: CanvasRenderingContext2D, pts: Vec[]) {
@@ -422,7 +421,7 @@ export class Renderer {
   }
 
   private drawPortals(ctx: CanvasRenderingContext2D) {
-    const pts = SECTORS[this.engine.sectorIndex].paths;
+    const pts = this.engine.paths.map((p) => p.pts);
     const t = this.t;
     pts.forEach((p) => {
       const start = p[0];
@@ -442,8 +441,8 @@ export class Renderer {
   }
 
   private drawBase(ctx: CanvasRenderingContext2D) {
-    const pts = SECTORS[this.engine.sectorIndex].paths;
-    const end = pts[0][pts[0].length - 1];
+    const pts = this.engine.paths[0].pts;
+    const end = pts[pts.length - 1];
     const x = Math.min(end.x - 4, GRID_W - 46);
     const y = end.y;
     const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.4);

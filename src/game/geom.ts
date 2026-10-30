@@ -56,3 +56,39 @@ export function distToPath(p: PathGeom, v: Vec): number {
   }
   return best;
 }
+
+
+export function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function genPathPoints(rng: () => number): Vec[] {
+  const levels = [90, 190, 280, 380, 470];
+  for (let i = levels.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [levels[i], levels[j]] = [levels[j], levels[i]];
+  }
+  const count = 3 + Math.floor(rng() * 3);
+  const ys = levels.slice(0, count);
+  if (rng() > 0.5) ys.reverse();
+  const anchors: number[] = [];
+  let ax = 200 + Math.floor(rng() * 60);
+  for (let i = 0; i < count - 1; i++) {
+    anchors.push(ax);
+    ax += 140 + Math.floor(rng() * 100);
+  }
+  const pts: Vec[] = [{ x: -40, y: ys[0] }];
+  for (let i = 0; i < count - 1; i++) {
+    pts.push({ x: anchors[i], y: ys[i] });
+    pts.push({ x: anchors[i], y: ys[i + 1] });
+  }
+  pts.push({ x: 1000, y: ys[count - 1] });
+  return pts;
+}

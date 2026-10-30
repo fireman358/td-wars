@@ -1,7 +1,7 @@
 import { ALL_WAVES, AUTO_WAVE_DELAY, EARLY_BONUS_RATIO, ENEMIES, PATH_WIDTH, SECTORS, START_CREDITS, START_LIVES, TOWERS } from './config';
 import { loadMeta, saveMeta, type MetaState } from './meta';
 import { Enemy } from './enemy';
-import { buildPath, dist, distToPath, type PathGeom } from './geom';
+import { buildPath, dist, distToPath, genPathPoints, mulberry32, type PathGeom } from './geom';
 import { Sfx } from './sfx';
 import { Tower } from './tower';
 import type { EnemyKindId, TargetMode, TowerKindId, Vec } from './types';
@@ -98,7 +98,12 @@ export class Engine {
 
   loadSector(index: number) {
     this.sectorIndex = index;
-    this.paths = SECTORS[index].paths.map(p => buildPath(p));
+    const rng = mulberry32(Math.floor(Math.random() * 2 ** 31) + index * 7919);
+    const entries = SECTORS[index].paths.length || 1;
+    const pathCount = SECTORS[index].waves[0]?.entries ?? entries;
+    this.paths = Array.from({ length: Math.max(entries, pathCount, 1) }, () =>
+      buildPath(genPathPoints(rng))
+    );
     const removed = this.towers.filter(t =>
       this.paths.some(p => distToPath(p, t.pos) < PATH_WIDTH / 2 + 14)
     );
