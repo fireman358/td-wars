@@ -118,16 +118,20 @@ body {
   overflow: hidden;
 }
 
+#app:fullscreen #bottom-bar { height: 116px; }
+
 #build-bar {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, 92px);
   gap: 8px;
   flex: 1;
+  min-width: 0;
+  justify-content: start;
 }
 
 .build-btn {
-  padding: 8px 6px;
-  min-width: 0;
+  padding: 6px 4px;
+  width: 92px;
   background: rgba(13, 21, 38, 0.9);
   border: 1px solid #24406b;
   border-radius: 8px;
@@ -142,15 +146,20 @@ body {
 .build-btn.locked { opacity: 0.45; cursor: default; }
 
 #info-panel {
-  width: 270px;
-  padding: 8px 12px;
+  width: 250px;
+  padding: 6px 10px;
   background: rgba(13, 21, 38, 0.92);
   border: 1px solid #24406b;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 11px;
   display: none;
-  overflow-y: auto;
+  overflow: hidden;
 }
+#info-panel .row { margin: 2px 0; }
+#info-panel h3 { font-size: 12px; margin-bottom: 4px; }
+#info-panel .actions { margin-top: 5px; gap: 4px; }
+#info-panel .actions button { padding: 5px 4px; font-size: 11px; }
+#info-panel .spec-choice button { padding: 5px 2px; }
 #info-panel h3 { color: #ffd23f; font-size: 13px; margin-bottom: 6px; }
 #info-panel .row { display: flex; justify-content: space-between; margin: 3px 0; }
 #info-panel .row .k { color: #7fa3d6; }
@@ -285,5 +294,14 @@ body {
 .perk-card button:disabled { opacity: 0.4; cursor: default; }
 .meta-note { font-size: 11px; color: #7fa3d6; font-style: italic; max-width: 480px; text-align: center; }
 
-#app:fullscreen { width: 100vw; background: #05070f; padding: 8px; }
+#app:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  background: #05070f;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+#app:fullscreen #game-wrap { flex: 0 0 auto; }
 #app:fullscreen #hud { border-radius: 10px 10px 0 0; }
