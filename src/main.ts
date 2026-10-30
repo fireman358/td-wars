@@ -23,7 +23,8 @@ const btnMeta = document.getElementById('btn-meta') as HTMLButtonElement;
 const btnFullscreen = document.getElementById('btn-fullscreen') as HTMLButtonElement;
 const saberFill = document.getElementById('saber-fill')!;
 const buildBar = document.getElementById('build-bar')!;
-const infoPanel = document.getElementById('info-panel')!;
+const infoPanel = document.getElementById('info-panel')!
+const sidePanel = document.getElementById('side-panel')!;
 
 let selectedBuild: TowerKindId | null = null;
 
@@ -38,7 +39,7 @@ function posFromEvent(ev: MouseEvent): Vec {
 function resizeCanvas(): void {
   const dpr = window.devicePixelRatio || 1;
   const wrap = document.getElementById('game-wrap')!;
-  const availW = wrap.clientWidth || GRID_W;
+  const availW = (wrap.clientWidth || GRID_W) - 240;
   const availH = window.innerHeight - hud.offsetHeight - 116 - 60;
   const scale = Math.max(0.4, Math.min(availW / GRID_W, availH / GRID_H));
   const cssW = GRID_W * scale;
@@ -152,6 +153,7 @@ function showTowerInfo(t: Tower) {
       <button id="btn-sell" class="btn">Vendre ${t.sellValue()} cr</button>
     </div>
     ${statsRows}`;
+  if (infoPanel.parentElement !== sidePanel) sidePanel.appendChild(infoPanel);
   infoPanel.style.display = 'block';
   document.getElementById('btn-up')?.addEventListener('click', (ev) => {
     ev.stopPropagation();

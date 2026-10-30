@@ -145,21 +145,38 @@ body {
 .build-btn .cost { font-size: 12px; color: #6fe08a; display: block; margin-top: 3px; }
 .build-btn.locked { opacity: 0.45; cursor: default; }
 
-#info-panel {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 250px;
-  padding: 8px 12px;
-  background: rgba(13, 21, 38, 0.94);
-  border: 1px solid #24406b;
-  border-radius: 8px;
-  font-size: 12px;
-  display: none;
-  z-index: 5;
-  max-height: calc(100% - 20px);
+#play-row {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+}
+
+#side-panel {
+  width: 240px;
+  padding: 10px;
+  background: #0a1122;
+  border-left: 1px solid #1c2740;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   overflow-y: auto;
 }
+
+#info-panel {
+  background: #101a30;
+  border: 1px solid #2c4a7a;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #e8f0fc;
+  display: none;
+}
+#info-panel h3 { font-size: 15px; }
+#info-panel .row { margin: 4px 0; font-size: 13px; }
+#info-panel .row .k { color: #9fbde8; }
+#info-panel .actions { display: flex; gap: 6px; margin-top: 8px; }
+#info-panel .actions .btn { padding: 7px 8px; font-size: 12px; }
 #info-panel .row { margin: 2px 0; }
 #info-panel h3 { font-size: 12px; margin-bottom: 4px; }
 #info-panel .actions { margin-top: 5px; gap: 4px; }
