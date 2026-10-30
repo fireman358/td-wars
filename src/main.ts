@@ -288,20 +288,26 @@ function showMetaPanel() {
     const maxed = lvl >= p.max;
     const cost = perkCost(lvl);
     const canBuy = !maxed && meta.points >= cost;
+    const current = lvl * p.perLevel;
+    const next = maxed ? current : (lvl + 1) * p.perLevel;
     return `<div class="perk-card">
       <div class="p-name">${p.name}</div>
       <div class="p-desc">${p.desc}</div>
+      <div class="p-val">Actuel : <b>+${current}${p.unit}</b>${maxed ? '' : ` → suivant : <b>+${next}${p.unit}</b>`}</div>
       <div class="p-lvl">Niveau ${lvl}/${p.max}</div>
-      <button class="btn primary" data-perk="${p.id}" ${canBuy ? '' : 'disabled'}>${maxed ? 'Max' : `Améliorer (${cost} pts)`}</button>
+      <button class="btn primary" data-perk="${p.id}" ${canBuy ? '' : 'disabled'}>${maxed ? '★ Niveau max' : `Améliorer — ${cost} pts`}</button>
     </div>`;
   }).join('');
   const panel = document.createElement('div');
   panel.id = 'meta-panel';
   panel.innerHTML = `<h3>PERKS DE COMMANDEMENT</h3>
-    <div class="meta-points">⭐ ${meta.points} points — record : vague ${meta.bestWave}</div>
+    <div class="meta-points">⭐ ${meta.points} points disponibles — record : vague ${meta.bestWave}/100</div>
     <div class="meta-list">${cards}</div>
-    <p class="meta-note">Les points se gagnent en fin de partie (1 pt / 2 vagues atteintes, +10 en victoire). Les perks s'appliquent au prochain lancement.</p>
-    <button id="btn-meta-close" class="btn">Fermer</button>`;
+    <div class="meta-help">
+      <p><b>Comment gagner des points :</b> 1 point toutes les 2 vagues atteintes, +10 points bonus en fin de partie (victoire ou défaite).</p>
+      <p><b>Comment ça marche :</b> les perks achetés s'appliquent automatiquement à chaque nouvelle partie. Les effets se cumulent par niveau.</p>
+    </div>
+    <button id="btn-meta-close" class="btn primary">Fermer</button>`;
   document.getElementById('canvas-holder')!.appendChild(panel);
   panel.querySelector('#btn-meta-close')!.addEventListener('click', () => panel.remove());
   panel.addEventListener('click', (ev) => {

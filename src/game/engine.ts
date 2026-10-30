@@ -253,7 +253,7 @@ export class Engine {
   }
 
   toggleSpeed() {
-    this.speed = this.speed === 1 ? 2 : this.speed === 2 ? 3 : 1;
+    this.speed = this.speed >= 5 ? 1 : this.speed + 1;
     this.emit({ type: 'speed' });
   }
 

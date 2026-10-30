@@ -328,3 +328,8 @@ body {
 #app:fullscreen #game-wrap { flex: 0 0 auto; }
 #app:fullscreen #hud { border-radius: 10px 10px 0 0; }
 #app:fullscreen #game { max-height: calc(100vh - 220px); }
+
+.perk-card .p-val { font-size: 12px; margin-bottom: 6px; color: #a9c4ec; }
+.perk-card .p-val b { color: #6fe08a; }
+.meta-help { max-width: 560px; text-align: left; font-size: 12px; color: #a9c4ec; line-height: 1.5; display: flex; flex-direction: column; gap: 6px; }
+.meta-help b { color: #ffd23f; }

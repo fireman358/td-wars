@@ -13,9 +13,9 @@ export interface MetaState {
 const KEY = 'tdwars_meta_v1';
 
 export const PERK_DEFS = [
-  { id: 'credits', name: 'Cargaison', desc: '+40 crédits de départ', max: 5 },
-  { id: 'lives', name: 'Boucliers renforcés', desc: '+2 vies de départ', max: 5 },
-  { id: 'saber', name: 'Cristal kyber', desc: '+25% énergie du sabre', max: 5 },
+  { id: 'credits', name: 'Cargaison', desc: 'Crédits de départ', perLevel: 40, unit: 'cr', max: 5 },
+  { id: 'lives', name: 'Boucliers renforcés', desc: 'Vies de départ', perLevel: 2, unit: ' vies', max: 5 },
+  { id: 'saber', name: 'Cristal kyber', desc: 'Énergie du sabrelaser', perLevel: 25, unit: '%', max: 5 },
 ] as const;
 
 export type PerkId = (typeof PERK_DEFS)[number]['id'];
