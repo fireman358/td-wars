@@ -620,16 +620,31 @@ window.addEventListener('pointerdown', () => {
   }
 }, { once: true });
 
+let lastMousePos: Vec | null = null;
+let lastSwingTime = 0;
 canvas.addEventListener('mousemove', (ev) => {
   const pos = posFromEvent(ev);
+  if (engine.saberActive && lastMousePos) {
+    const speed = Math.hypot(pos.x - lastMousePos.x, pos.y - lastMousePos.y);
+    const now = performance.now();
+    if (speed > 40 && now - lastSwingTime > 250) {
+      lastSwingTime = now;
+      engine.sfx.saberSwing(speed);
+    }
+  }
+  lastMousePos = pos;
   renderer.mouse = pos;
   engine.saberPos = pos;
   renderer.buildPreview = selectedBuild ? { kindId: selectedBuild, valid: true } : null;
 });
 canvas.addEventListener('mousedown', (ev) => {
-  if (ev.button === 0) engine.saberActive = true;
+  if (ev.button === 0) {
+    engine.saberActive = true;
+    engine.sfx.startSaberHum();
+  }
 });
 window.addEventListener('mouseup', () => {
+  if (engine.saberActive) engine.sfx.stopSaberHum();
   engine.saberActive = false;
 });
 window.addEventListener('blur', () => {
@@ -645,6 +660,7 @@ canvas.addEventListener('touchstart', (ev) => {
   engine.saberPos = pos;
   renderer.mouse = pos;
   engine.saberActive = true;
+  engine.sfx.startSaberHum();
   ev.preventDefault();
 }, { passive: false });
 canvas.addEventListener('touchmove', (ev) => {
@@ -659,6 +675,7 @@ canvas.addEventListener('touchmove', (ev) => {
   ev.preventDefault();
 }, { passive: false });
 canvas.addEventListener('touchend', (ev) => {
+  if (engine.saberActive) engine.sfx.stopSaberHum();
   engine.saberActive = false;
   if (touchStartPos && !touchMoved) {
     // tap simple : meme logique que le clic souris

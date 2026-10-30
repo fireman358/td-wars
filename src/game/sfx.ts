@@ -98,6 +98,69 @@ export class Sfx {
     }, 8000);
   }
 
+  private saberNodes: { osc: OscillatorNode; osc2: OscillatorNode; gain: GainNode; lfo: OscillatorNode } | null = null;
+
+  startSaberHum() {
+    if (!this.enabled || this.saberNodes) return;
+    const ctx = this.ensure();
+    if (!ctx) return;
+    // hum du sabrelaser : deux oscillateurs desacordes (battement) + LFO de modulation
+    const osc = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const lfo = ctx.createOscillator();
+    const lfoGain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.value = 92;
+    osc2.type = 'sawtooth';
+    osc2.frequency.value = 93.5;
+    lfo.type = 'sine';
+    lfo.frequency.value = 6;
+    lfoGain.gain.value = 4;
+    gain.gain.value = 0.06;
+    lfo.connect(lfoGain);
+    lfoGain.connect(osc.frequency);
+    lfoGain.connect(osc2.frequency);
+    osc.connect(gain);
+    osc2.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc2.start();
+    lfo.start();
+    this.saberNodes = { osc, osc2, gain, lfo };
+  }
+
+  saberSwing(speed: number) {
+    if (!this.enabled) return;
+    const ctx = this.ensure();
+    if (!ctx) return;
+    // swing : sweep de frequence proportionnel au mouvement du curseur
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = 'sawtooth';
+    const base = 140 + Math.min(400, speed * 3);
+    osc.frequency.setValueAtTime(base, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(60, base * 0.4), ctx.currentTime + 0.18);
+    g.gain.setValueAtTime(0.09, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+    osc.connect(g).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.2);
+  }
+
+  stopSaberHum() {
+    const ctx = this.ctx;
+    if (!ctx || !this.saberNodes) return;
+    try {
+      this.saberNodes.gain.gain.cancelScheduledValues(ctx.currentTime);
+      this.saberNodes.gain.gain.setValueAtTime(0, ctx.currentTime);
+      this.saberNodes.osc.stop(ctx.currentTime + 0.05);
+      this.saberNodes.osc2.stop(ctx.currentTime + 0.05);
+      this.saberNodes.lfo.stop(ctx.currentTime + 0.05);
+    } catch { /* deja arrete */ }
+    this.saberNodes = null;
+  }
+
   tone(freq: number, dur: number, type: OscillatorType = 'sine', gain = 0.12, slide = 0) {
     if (!this.enabled) return;
     const ctx = this.ensure();
