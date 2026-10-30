@@ -859,13 +859,19 @@ export class Renderer {
       ctx.arc(x, y, r * 2.1, 0, Math.PI * 2);
       ctx.stroke();
     }
-    if (e.hp < e.maxHp) {
+    if (e.hp < e.maxHp || e.shield < e.maxShield) {
       const w = e.kind.radius * 2.6;
+      const bx = x - w / 2;
+      const by = y - e.kind.radius - 12;
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
-      ctx.fillRect(x - w / 2, y - e.kind.radius - 12, w, 4);
+      ctx.fillRect(bx, by, w, 5);
+      if (e.shield > 0) {
+        ctx.fillStyle = '#4fc3f7';
+        ctx.fillRect(bx, by, w * (e.shield / e.maxShield), 2);
+      }
       const pct = Math.max(0, e.hp / e.maxHp);
       ctx.fillStyle = pct > 0.5 ? '#6fe08a' : pct > 0.25 ? '#ffd23f' : '#ff6b6b';
-      ctx.fillRect(x - w / 2, y - e.kind.radius - 12, w * pct, 4);
+      ctx.fillRect(bx, by + (e.maxShield > 0 ? 2 : 0), w * pct, e.maxShield > 0 ? 3 : 5);
     }
     if (e.slowUntil > 0) {
       ctx.strokeStyle = 'rgba(63, 214, 201, 0.6)';

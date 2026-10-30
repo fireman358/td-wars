@@ -4,6 +4,8 @@ export class Enemy {
   kind: EnemyKind;
   hp: number;
   maxHp: number;
+  shield: number;
+  maxShield: number;
   dist: number;
   speedBase: number;
   slowUntil = 0;
@@ -19,6 +21,8 @@ export class Enemy {
     this.kind = kind;
     this.maxHp = Math.round(kind.hp * hpScale);
     this.hp = this.maxHp;
+    this.maxShield = kind.armor > 0 ? Math.round(this.maxHp * 0.15) : 0;
+    this.shield = this.maxShield;
     this.speedBase = kind.speed * speedScale;
     this.dist = startDist;
   }
@@ -28,7 +32,16 @@ export class Enemy {
   }
 
   takeDamage(dmg: number): number {
-    const effective = Math.max(1, dmg - this.kind.armor);
+    let effective = Math.max(1, dmg - this.kind.armor);
+    if (this.shield > 0) {
+      const absorbed = Math.min(this.shield, effective);
+      this.shield -= absorbed;
+      effective -= absorbed;
+      if (effective <= 0) {
+        this.hitFlash = 0.08;
+        return 0;
+      }
+    }
     this.hp -= effective;
     this.hitFlash = 0.12;
     if (this.hp <= 0 && this.alive) {

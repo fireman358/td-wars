@@ -25,6 +25,9 @@ const saberFill = document.getElementById('saber-fill')!;
 const buildBar = document.getElementById('build-bar')!;
 const infoPanel = document.getElementById('info-panel')!
 const sidePanel = document.getElementById('side-panel')!;
+const wavePreview = document.createElement('div');
+wavePreview.id = 'wave-preview';
+sidePanel.appendChild(wavePreview);
 
 let selectedBuild: TowerKindId | null = null;
 
@@ -65,6 +68,34 @@ document.addEventListener('fullscreenchange', () => {
 });
 window.addEventListener('resize', () => resizeCanvas());
 
+const ENEMY_SHORT: Record<string, string> = {
+  drone: '🛸 Sonde',
+  soldier: '🪖 Trooper',
+  fighter: '✈️ Chasseur',
+  tank: '🛻 Char',
+  walker: '🦵 Marcheur',
+  stealth: '👻 Furtif',
+  healer: '✚ Régén.',
+  destroyer: '🚀 Destroyer',
+};
+
+function refreshWavePreview() {
+  const next = ALL_WAVES[engine.waveIndex + 1];
+  if (!next) {
+    wavePreview.innerHTML = `<h4>Vague suivante</h4><p class="wp-empty">—</p>`;
+    return;
+  }
+  const counts = new Map<string, number>();
+  for (const g of next.groups) counts.set(g.id, (counts.get(g.id) ?? 0) + g.count);
+  const rows = [...counts.entries()].map(([id, n]) =>
+    `<div class="wp-row"><span>${ENEMY_SHORT[id] ?? id}</span><b>×${n}</b></div>`
+  ).join('');
+  wavePreview.innerHTML = `<h4>Vague ${engine.waveNumber + 1} — ${next.name}</h4>
+    <div class="wp-entries">${next.entries > 1 ? `⚠️ ${next.entries} entrées simultanées` : '1 entrée'}</div>
+    ${rows}
+    <div class="wp-reward">Récompense : +${next.reward} cr</div>`;
+}
+
 function refreshHud() {
   elCredits.textContent = String(engine.credits);
   elLives.textContent = String(engine.lives);
@@ -83,6 +114,7 @@ function refreshHud() {
   }
   btnSpeed.textContent = `x${engine.speed}`;
   refreshBuildBar();
+  refreshWavePreview();
 }
 
 function drawTowerIcon(cv: HTMLCanvasElement, id: string, accent: string) {
