@@ -57,13 +57,23 @@ function refreshBuildBar() {
     const btn = document.createElement('button');
     btn.className = 'build-btn';
     const cost = k.levels[0].cost;
-    const locked = engine.credits < cost;
-    btn.classList.toggle('locked', locked);
+    const unlocked = engine.isUnlocked(id);
+    const affordable = engine.credits >= cost;
+    btn.classList.toggle('locked', !unlocked || !affordable);
     if (selectedBuild === id) btn.classList.add('selected');
-    btn.innerHTML = `<span class="name" style="color:${k.color}">${k.name}</span><span class="cost">${cost} cr</span>`;
-    btn.title = k.desc;
+    if (!unlocked) {
+      btn.innerHTML = `<span class="name" style="color:#556">🔒 ${k.name}</span><span class="cost">Secteur ${k.unlockSector + 1}</span>`;
+      btn.title = `Débloqué au secteur ${k.unlockSector + 1}`;
+    } else {
+      btn.innerHTML = `<span class="name" style="color:${k.color}">T${k.tier} · ${k.name}</span><span class="cost">${cost} cr</span>`;
+      btn.title = `${k.desc} (Tier ${k.tier})`;
+    }
     btn.addEventListener('click', (ev) => {
       ev.stopPropagation();
+      if (!unlocked) {
+        engine.sfx.error();
+        return;
+      }
       if (engine.credits < cost) {
         engine.sfx.error();
         return;

@@ -419,6 +419,39 @@ export class Renderer {
           ctx.stroke();
         }
         break;
+      case 'tractor':
+        ctx.fillStyle = '#3a3220';
+        ctx.fillRect(-2, -7, 22, 14);
+        ctx.strokeStyle = c;
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(14 + i * 5, -4 + i * 2);
+          ctx.lineTo(24 + i * 5, -1 + i * 2);
+          ctx.stroke();
+        }
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.arc(10, 0, 4, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+      case 'axial':
+        ctx.fillStyle = '#1e2a1a';
+        ctx.beginPath();
+        ctx.arc(0, 0, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#2c3a24';
+        ctx.fillRect(6, -11, 18, 22);
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.arc(22, 0, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(216, 255, 176, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, this.t * 2, this.t * 2 + 2);
+        ctx.stroke();
+        break;
       case 'rail':
         ctx.fillStyle = '#33363c';
         ctx.fillRect(-2, -8, 26, 16);

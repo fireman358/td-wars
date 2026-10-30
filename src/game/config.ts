@@ -130,6 +130,8 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
   plasma: {
     id: 'plasma',
     name: 'Blaster léger',
+    tier: 1,
+    unlockSector: 0,
     desc: 'Tir de blaster rapide mono-cible, polyvalent et bon marché.',
     color: '#3f7fd6',
     accent: '#8cd0ff',
@@ -142,7 +144,9 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
   },
   laser: {
     id: 'laser',
-    name: 'Canon laser',
+    name: 'Canon laser lourd',
+    tier: 4,
+    unlockSector: 1,
     desc: 'Rayon laser à fort dégât, cadence moyenne.',
     color: '#d63f3f',
     accent: '#ff9a8a',
@@ -156,6 +160,8 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
   ion: {
     id: 'ion',
     name: 'Canon ionique',
+    tier: 2,
+    unlockSector: 0,
     desc: 'Ralentit les cibles touchées grâce au gel ionique.',
     color: '#3fd6c9',
     accent: '#a8fff4',
@@ -169,6 +175,8 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
   missile: {
     id: 'missile',
     name: 'Torpilles à proton',
+    tier: 3,
+    unlockSector: 1,
     desc: 'Torpilles à charge fracassante : dégâts de zone.',
     color: '#d69a3f',
     accent: '#ffe08a',
@@ -182,6 +190,8 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
   tesla: {
     id: 'tesla',
     name: 'Arc DEMP',
+    tier: 5,
+    unlockSector: 2,
     desc: 'Décharge électromagnétique qui saute d\'un ennemi à l\'autre.',
     color: '#a64fd6',
     accent: '#dcb0ff',
@@ -195,6 +205,8 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
   rail: {
     id: 'rail',
     name: 'Turbo-laser orbital',
+    tier: 6,
+    unlockSector: 2,
     desc: 'Portée extrême et dégâts massifs, cadence lente.',
     color: '#e6e6e6',
     accent: '#bfe6ff',
@@ -205,9 +217,39 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
       { cost: 300, damage: 290, range: 300, fireRate: 0.55, projectileSpeed: 1000, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
     ],
   },
+  tractor: {
+    id: 'tractor',
+    name: 'Rayon tracteur',
+    desc: 'Immobilise presque totalement les vaisseaux pris dans son faisceau.',
+    color: '#c9a64f',
+    accent: '#ffe9a8',
+    kind: 'slow',
+    tier: 7,
+    unlockSector: 3,
+    levels: [
+      { cost: 420, damage: 4, range: 150, fireRate: 1.0, projectileSpeed: 500, splashRadius: 55, slowFactor: 0.22, slowDuration: 2.2, chainTargets: 0 },
+      { cost: 380, damage: 8, range: 170, fireRate: 1.2, projectileSpeed: 540, splashRadius: 65, slowFactor: 0.15, slowDuration: 2.6, chainTargets: 0 },
+      { cost: 650, damage: 14, range: 190, fireRate: 1.4, projectileSpeed: 580, splashRadius: 75, slowFactor: 0.09, slowDuration: 3.0, chainTargets: 0 },
+    ],
+  },
+  axial: {
+    id: 'axial',
+    name: 'Canon axial',
+    desc: 'Superlaser de siège : rayon à dégâts colossaux, cadence très lente.',
+    color: '#7de64f',
+    accent: '#d8ffb0',
+    kind: 'single',
+    tier: 8,
+    unlockSector: 3,
+    levels: [
+      { cost: 600, damage: 320, range: 260, fireRate: 0.22, projectileSpeed: 1100, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+      { cost: 520, damage: 560, range: 290, fireRate: 0.26, projectileSpeed: 1150, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+      { cost: 900, damage: 1000, range: 320, fireRate: 0.3, projectileSpeed: 1200, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+    ],
+  },
 };
 
-export const BUILD_ORDER: TowerKindId[] = ['plasma', 'laser', 'ion', 'missile', 'tesla', 'rail'];
+export const BUILD_ORDER: TowerKindId[] = ['plasma', 'ion', 'missile', 'laser', 'tesla', 'rail', 'tractor', 'axial'];
 
 export const ENEMIES: Record<EnemyKindId, EnemyKind> = {
   drone: {

@@ -169,10 +169,14 @@ export class Engine {
     return { hp: 1 + w * 0.08, speed: 1 + Math.min(0.5, w * 0.015) };
   }
 
+  isUnlocked(kindId: TowerKindId): boolean {
+    return this.sectorIndex >= TOWERS[kindId].unlockSector;
+  }
+
   placeTower(kindId: TowerKindId, pos: Vec): boolean {
     const kind = TOWERS[kindId];
     const cost = kind.levels[0].cost;
-    if (this.credits < cost) {
+    if (!this.isUnlocked(kindId) || this.credits < cost) {
       this.sfx.error();
       return false;
     }

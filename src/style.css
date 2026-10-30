@@ -78,12 +78,13 @@ body {
   position: absolute;
   left: 10px;
   bottom: 10px;
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
 
 .build-btn {
-  width: 92px;
+  width: 96px;
   padding: 6px;
   background: rgba(13, 21, 38, 0.9);
   border: 1px solid #24406b;

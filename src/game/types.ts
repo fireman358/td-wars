@@ -5,11 +5,13 @@ export interface Vec {
 
 export type TowerKindId =
   | 'plasma'
-  | 'laser'
   | 'ion'
   | 'missile'
+  | 'laser'
   | 'tesla'
-  | 'rail';
+  | 'rail'
+  | 'tractor'
+  | 'axial';
 
 export type EnemyKindId =
   | 'drone'
@@ -40,6 +42,8 @@ export interface TowerKind {
   color: string;
   accent: string;
   kind: 'single' | 'splash' | 'slow' | 'chain';
+  tier: number;
+  unlockSector: number;
   levels: TowerLevel[];
 }
 
