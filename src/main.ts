@@ -176,19 +176,31 @@ function refreshBuildBar() {
     icon.height = 44;
     drawTowerIcon(icon, id, k.accent);
     btn.appendChild(icon);
-    if (!unlocked) {
-      const lock = document.createElement('span');
-      lock.className = 'name';
-      lock.style.color = '#667';
-      lock.textContent = `🔒 Secteur ${k.unlockSector + 1}`;
-      btn.appendChild(lock);
-      btn.title = `${k.name} — débloqué au secteur ${k.unlockSector + 1}`;
-    } else {
+    const nameEl = document.createElement('span');
+    nameEl.className = 'name';
+    nameEl.style.color = unlocked ? k.color : '#667';
+    nameEl.textContent = unlocked ? k.name.replace(' de moindal', '').replace(' à proton', '').replace(' léger', '') : `🔒 Secteur ${k.unlockSector + 1}`;
+    btn.appendChild(nameEl);
+    if (unlocked) {
+      const attrEl = document.createElement('span');
+      attrEl.className = 'attr';
+      attrEl.textContent = k.kind === 'income'
+        ? `+${k.levels[0].income} cr/s`
+        : k.kind === 'splash'
+          ? `${k.levels[0].damage} dmg · zone`
+          : k.kind === 'slow'
+            ? `${k.levels[0].damage} dmg · ralentit`
+            : k.kind === 'chain'
+              ? `${k.levels[0].damage} dmg · chaîne`
+              : `${k.levels[0].damage} dmg`;
+      btn.appendChild(attrEl);
       const cost2 = document.createElement('span');
       cost2.className = 'cost';
       cost2.textContent = `${cost} cr`;
       btn.appendChild(cost2);
       btn.title = `${k.name} (T${k.tier}) — ${k.desc}`;
+    } else {
+      btn.title = `${k.name} — débloqué au secteur ${k.unlockSector + 1}`;
     }
     btn.addEventListener('click', (ev) => {
       ev.stopPropagation();
