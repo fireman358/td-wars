@@ -31,6 +31,7 @@ export class Sfx {
     osc.connect(g).connect(p).connect(ctx.destination);
     osc.start(ctx.currentTime + start);
     osc.stop(ctx.currentTime + start + dur + 0.05);
+    this.musicNodes.push({ osc, gain: g });
   }
 
   startMusic() {
@@ -44,8 +45,15 @@ export class Sfx {
   stopMusic() {
     this.musicPlaying = false;
     window.clearTimeout(this.musicStopTimer);
-    for (const n of this.musicNodes) {
-      try { n.osc.stop(); } catch { /* deja arrete */ }
+    const ctx = this.ctx;
+    if (ctx) {
+      for (const n of this.musicNodes) {
+        try {
+          n.gain.gain.cancelScheduledValues(ctx.currentTime);
+          n.gain.gain.setValueAtTime(0, ctx.currentTime);
+          n.osc.stop(ctx.currentTime + 0.05);
+        } catch { /* deja arrete */ }
+      }
     }
     this.musicNodes = [];
   }
