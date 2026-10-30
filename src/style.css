@@ -98,7 +98,13 @@ body {
 
 #canvas-holder { position: relative; line-height: 0; }
 
-#game { display: block; background: #060a15; }
+#game {
+  display: block;
+  background: #060a15;
+  width: 100%;
+  height: auto;
+  image-rendering: auto;
+}
 
 #bottom-bar {
   display: flex;
@@ -115,12 +121,13 @@ body {
 #build-bar {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
+  gap: 8px;
+  flex: 1;
 }
 
 .build-btn {
-  width: 96px;
-  padding: 6px;
+  padding: 8px 6px;
+  min-width: 0;
   background: rgba(13, 21, 38, 0.9);
   border: 1px solid #24406b;
   border-radius: 8px;
@@ -130,8 +137,8 @@ body {
 }
 .build-btn:hover { border-color: #ffd23f; }
 .build-btn.selected { border-color: #ffd23f; box-shadow: 0 0 10px rgba(255, 210, 63, 0.5); }
-.build-btn .name { font-size: 11px; font-weight: 700; display: block; }
-.build-btn .cost { font-size: 11px; color: #6fe08a; display: block; margin-top: 2px; }
+.build-btn .name { font-size: 12px; font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.build-btn .cost { font-size: 12px; color: #6fe08a; display: block; margin-top: 3px; }
 .build-btn.locked { opacity: 0.45; cursor: default; }
 
 #info-panel {
@@ -168,7 +175,6 @@ body {
 
 @media (max-width: 980px) {
   #app { width: 100%; }
-  canvas { width: 100%; height: auto; }
 }
 
 #sector {
@@ -278,3 +284,6 @@ body {
 .perk-card button { width: 100%; }
 .perk-card button:disabled { opacity: 0.4; cursor: default; }
 .meta-note { font-size: 11px; color: #7fa3d6; font-style: italic; max-width: 480px; text-align: center; }
+
+#app:fullscreen { width: 100vw; background: #05070f; padding: 8px; }
+#app:fullscreen #hud { border-radius: 10px 10px 0 0; }

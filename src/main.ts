@@ -19,6 +19,7 @@ const btnSpeed = document.getElementById('btn-speed') as HTMLButtonElement;
 const btnSound = document.getElementById('btn-sound') as HTMLButtonElement;
 const btnSector = document.getElementById('btn-sector') as HTMLButtonElement;
 const btnMeta = document.getElementById('btn-meta') as HTMLButtonElement;
+const btnFullscreen = document.getElementById('btn-fullscreen') as HTMLButtonElement;
 const saberFill = document.getElementById('saber-fill')!;
 const buildBar = document.getElementById('build-bar')!;
 const infoPanel = document.getElementById('info-panel')!;
@@ -32,6 +33,30 @@ function posFromEvent(ev: MouseEvent): Vec {
     y: ((ev.clientY - rect.top) / rect.height) * GRID_H,
   };
 }
+
+function resizeCanvas(): void {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const cssW = rect.width || GRID_W;
+  const scale = cssW / GRID_W;
+  canvas.width = Math.round(GRID_W * dpr * scale);
+  canvas.height = Math.round(GRID_H * dpr * scale);
+  renderer.ctx.setTransform((dpr * scale), 0, 0, (dpr * scale), 0, 0);
+  renderer.ctx.imageSmoothingEnabled = true;
+}
+
+btnFullscreen.addEventListener('click', () => {
+  const app = document.getElementById('app')!;
+  if (document.fullscreenElement) {
+    void document.exitFullscreen();
+  } else {
+    void app.requestFullscreen();
+  }
+});
+document.addEventListener('fullscreenchange', () => {
+  setTimeout(resizeCanvas, 60);
+});
+window.addEventListener('resize', () => resizeCanvas());
 
 function refreshHud() {
   elCredits.textContent = String(engine.credits);
@@ -347,6 +372,8 @@ canvas.addEventListener('click', (ev) => {
 
 refreshHud();
 showSectorIntro();
+resizeCanvas();
+setTimeout(resizeCanvas, 100);
 
 let last = performance.now();
 let hudTick = 0;
