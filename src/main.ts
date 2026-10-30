@@ -502,9 +502,13 @@ window.addEventListener('mouseup', () => {
 window.addEventListener('blur', () => {
   engine.saberActive = false;
 });
+let touchStartPos: Vec | null = null;
+let touchMoved = false;
 canvas.addEventListener('touchstart', (ev) => {
   const t = ev.touches[0];
   const pos = posFromEvent(t as unknown as MouseEvent);
+  touchStartPos = pos;
+  touchMoved = false;
   engine.saberPos = pos;
   renderer.mouse = pos;
   engine.saberActive = true;
@@ -513,23 +517,35 @@ canvas.addEventListener('touchstart', (ev) => {
 canvas.addEventListener('touchmove', (ev) => {
   const t = ev.touches[0];
   const pos = posFromEvent(t as unknown as MouseEvent);
+  if (touchStartPos && Math.hypot(pos.x - touchStartPos.x, pos.y - touchStartPos.y) > 12) {
+    touchMoved = true;
+  }
   engine.saberPos = pos;
   renderer.mouse = pos;
   if (selectedBuild) renderer.buildPreview = { kindId: selectedBuild, valid: true };
   ev.preventDefault();
 }, { passive: false });
-canvas.addEventListener('touchend', () => {
-  if (engine.saberActive && !lastTapPlaced) {
-    // saber released: if a build is selected, place the tower where released
-    if (selectedBuild) {
-      engine.placeTower(selectedBuild, engine.saberPos);
+canvas.addEventListener('touchend', (ev) => {
+  engine.saberActive = false;
+  if (touchStartPos && !touchMoved) {
+    // tap simple : meme logique que le clic souris
+    const pos = touchStartPos;
+    const clicked = engine.towerAt(pos);
+    if (clicked) {
+      selectedBuild = null;
+      renderer.buildPreview = null;
+      showTowerInfo(clicked);
       refreshBuildBar();
+    } else if (selectedBuild) {
+      engine.placeTower(selectedBuild, pos);
+    } else {
+      hideInfo();
     }
   }
-  engine.saberActive = false;
-  lastTapPlaced = false;
-});
-let lastTapPlaced = false;
+  touchStartPos = null;
+  touchMoved = false;
+  ev.preventDefault();
+}, { passive: false });
 canvas.addEventListener('mouseleave', () => {
   renderer.buildPreview = null;
 });
