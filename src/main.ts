@@ -97,7 +97,7 @@ function refreshWavePreview() {
   wavePreview.innerHTML = `<h4>Vague ${engine.waveNumber + 1} — ${next.name}</h4>
     <div class="wp-entries">${next.entries > 1 ? `⚠️ ${next.entries} entrées simultanées` : '1 entrée'}</div>
     ${rows}
-    <div class="wp-reward">Récompense : +${next.reward} cr</div>`;
+    <div class="wp-reward">Récompense : +${Math.round(next.reward)} cr</div>`;
 }
 
 function refreshHud() {
@@ -227,12 +227,12 @@ function refreshBuildBar() {
       attrEl.textContent = k.kind === 'income'
         ? `+${k.levels[0].income} cr/s`
         : k.kind === 'splash'
-          ? `${k.levels[0].damage} dmg · zone`
+          ? `${Math.round(k.levels[0].damage)} dmg · zone`
           : k.kind === 'slow'
-            ? `${k.levels[0].damage} dmg · ralentit`
+            ? `${Math.round(k.levels[0].damage)} dmg · ralentit`
             : k.kind === 'chain'
-              ? `${k.levels[0].damage} dmg · chaîne`
-              : `${k.levels[0].damage} dmg`;
+              ? `${Math.round(k.levels[0].damage)} dmg · chaîne`
+              : `${Math.round(k.levels[0].damage)} dmg`;
       btn.appendChild(attrEl);
       const cost2 = document.createElement('span');
       cost2.className = 'cost';
@@ -278,11 +278,11 @@ function showTowerInfo(t: Tower) {
   const incomeRow = k.kind === 'income' ? `<div class="row"><span class="k">Revenu</span><span>${s.income ?? 0} cr/s</span></div>` : '';
   const statsRows = k.kind === 'income'
     ? incomeRow
-    : `<div class="row"><span class="k">Dégâts</span><span>${s.damage}</span></div>
-    <div class="row"><span class="k">Portée</span><span>${s.range}</span></div>
-    <div class="row"><span class="k">Cadence</span><span>${s.fireRate}/s</span></div>
-    ${k.kind === 'splash' ? `<div class="row"><span class="k">Zone</span><span>${s.splashRadius}</span></div>` : ''}
-    ${k.kind === 'slow' ? `<div class="row"><span class="k">Ralentit</span><span>x${s.slowFactor}</span></div>` : ''}
+    : `<div class="row"><span class="k">Dégâts</span><span>${Math.round(s.damage)}</span></div>
+    <div class="row"><span class="k">Portée</span><span>${Math.round(s.range)}</span></div>
+    <div class="row"><span class="k">Cadence</span><span>${Math.round(s.fireRate * 10) / 10}/s</span></div>
+    ${k.kind === 'splash' ? `<div class="row"><span class="k">Zone</span><span>${Math.round(s.splashRadius)}</span></div>` : ''}
+    ${k.kind === 'slow' ? `<div class="row"><span class="k">Ralentit</span><span>x${Math.round(s.slowFactor * 100) / 100}</span></div>` : ''}
     ${k.kind === 'chain' ? `<div class="row"><span class="k">Chaîne</span><span>${s.chainTargets}</span></div>` : ''}
     <div class="row"><span class="k">Cible</span><button id="btn-target" class="btn" style="padding:2px 8px;font-size:11px">${TARGET_LABELS[t.targetMode]}</button></div>`;
   infoPanel.innerHTML = `
