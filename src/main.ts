@@ -540,7 +540,7 @@ function loop(now: number) {
   hudTick += dt;
   if (hudTick > 0.25) {
     hudTick = 0;
-    if (engine.autoTimer >= 0) refreshHud();
+    refreshHud();
   }
   saberFill.style.width = `${(engine.saberEnergy / engine.saberMax) * 100}%`;
   requestAnimationFrame(loop);
