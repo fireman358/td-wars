@@ -45,8 +45,10 @@ function resizeCanvas(): void {
   const dpr = window.devicePixelRatio || 1;
   const wrap = document.getElementById('game-wrap')!;
   const availW = (wrap.clientWidth || GRID_W) - 240;
-  const availH = window.innerHeight - hud.offsetHeight - 116 - 60;
-  const scale = Math.max(0.4, Math.min(availW / GRID_W, availH / GRID_H));
+  const hudH = hud.offsetHeight || 90;
+  const availH = Math.max(240, window.innerHeight - hudH - 116 - 60);
+  const availW2 = Math.max(320, availW);
+  const scale = Math.max(0.4, Math.min(availW2 / GRID_W, availH / GRID_H));
   const cssW = GRID_W * scale;
   const cssH = GRID_H * scale;
   canvas.style.width = cssW + 'px';
