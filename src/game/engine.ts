@@ -101,8 +101,9 @@ export class Engine {
     const rng = mulberry32(Math.floor(Math.random() * 2 ** 31) + index * 7919);
     const entries = SECTORS[index].paths.length || 1;
     const pathCount = SECTORS[index].waves[0]?.entries ?? entries;
-    this.paths = Array.from({ length: Math.max(entries, pathCount, 1) }, () =>
-      buildPath(genPathPoints(rng))
+    const laneCount = Math.max(entries, pathCount, 1);
+    this.paths = Array.from({ length: laneCount }, (_, i) =>
+      buildPath(genPathPoints(rng, i, laneCount))
     );
     for (const t of this.towers) {
       this.credits += Math.floor(t.totalSpent * 0.7);

@@ -69,14 +69,14 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
-export function genPathPoints(rng: () => number): Vec[] {
-  const levels = [90, 190, 280, 380, 470];
-  for (let i = levels.length - 1; i > 0; i--) {
+export function genPathPoints(rng: () => number, laneIndex = 0, laneCount = 1): Vec[] {
+  const allLevels = [90, 190, 280, 380, 470];
+  for (let i = allLevels.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
-    [levels[i], levels[j]] = [levels[j], levels[i]];
+    [allLevels[i], allLevels[j]] = [allLevels[j], allLevels[i]];
   }
   const count = 3 + Math.floor(rng() * 3);
-  const ys = levels.slice(0, count);
+  const ys = allLevels.slice(0, count);
   if (rng() > 0.5) ys.reverse();
   const anchors: number[] = [];
   let ax = 200 + Math.floor(rng() * 60);
@@ -84,11 +84,16 @@ export function genPathPoints(rng: () => number): Vec[] {
     anchors.push(ax);
     ax += 140 + Math.floor(rng() * 100);
   }
-  const pts: Vec[] = [{ x: -40, y: ys[0] }];
+  // entree : slot dedie par voie, sans collision possible
+  const entrySlots = [90, 210, 330, 450, 470];
+  const entryY = laneCount <= 1 ? ys[0] : entrySlots[laneIndex % 3 + (laneCount > 3 ? 3 : 0)] ?? ys[0];
+  const pts: Vec[] = [{ x: -40, y: entryY }, { x: anchors[0] - 60 - laneIndex * 20, y: entryY }];
   for (let i = 0; i < count - 1; i++) {
     pts.push({ x: anchors[i], y: ys[i] });
     pts.push({ x: anchors[i], y: ys[i + 1] });
   }
-  pts.push({ x: 1000, y: ys[count - 1] });
+  // sorties : chaque voie debouche sur un lane distinct, proche des autres
+  const exitY = laneCount <= 1 ? ys[count - 1] : 260 + (laneIndex - (laneCount - 1) / 2) * 40;
+  pts.push({ x: 1000, y: exitY });
   return pts;
 }

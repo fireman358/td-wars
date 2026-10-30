@@ -441,6 +441,13 @@ export class Renderer {
   }
 
   private drawBase(ctx: CanvasRenderingContext2D) {
+    const lanes = this.engine.paths.map(p => p.pts[p.pts.length - 1]);
+    if (lanes.length > 1) {
+      const ys = lanes.map(l => l.y);
+      const x = Math.min(...lanes.map(l => l.x));
+      this.drawBaseComplex(ctx, x - 44, Math.min(...ys), Math.max(...ys));
+      return;
+    }
     const pts = this.engine.paths[0].pts;
     const end = pts[pts.length - 1];
     const x = Math.min(end.x - 4, GRID_W - 46);
@@ -512,6 +519,41 @@ export class Renderer {
         break;
       }
     }
+    ctx.restore();
+  }
+
+  private drawBaseComplex(ctx: CanvasRenderingContext2D, x: number, minY: number, maxY: number) {
+    const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.4);
+    const h = Math.max(80, maxY - minY);
+    const midY = (minY + maxY) / 2;
+    ctx.save();
+    ctx.translate(x, midY);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(-30, -h / 2 + 6, 70, h + 8);
+    const theme = this.theme();
+    const colors: Record<string, string[]> = {
+      desert: ['#c8b090', '#8a7458', '#6e5a42'],
+      ice: ['#9fb4cc', '#c9d8e8', '#7a94b8'],
+      forest: ['#3d5a35', '#2c4a28', '#6b4a2c'],
+      city: ['#cfd6e8', '#8892b0', '#3a4358'],
+    };
+    const cols = colors[theme] ?? colors.desert;
+    ctx.fillStyle = cols[0];
+    ctx.fillRect(-30, -h / 2, 24, h * 0.4);
+    ctx.fillStyle = cols[1];
+    ctx.fillRect(-6, -h / 2 + 6, 22, h * 0.5);
+    ctx.fillStyle = cols[2];
+    ctx.fillRect(16, -h / 2 + 2, 20, h * 0.42);
+    const glow = theme === 'forest' ? 'rgba(255,200,100,' : 'rgba(120,200,255,';
+    ctx.fillStyle = `${glow}${0.35 + pulse * 0.35})`;
+    ctx.fillRect(-26, -h / 2 + 8, 6, 8);
+    ctx.fillRect(-2, -h / 2 + 14, 6, 10);
+    ctx.fillRect(20, -h / 2 + 10, 6, 8);
+    ctx.strokeStyle = `rgba(255, 210, 63, ${0.4 + pulse * 0.4})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(5, -h / 2 - 4, 5 + pulse * 3, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   }
 
