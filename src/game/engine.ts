@@ -73,6 +73,12 @@ export class Engine {
     this.loadSector(0);
   }
 
+  jumpToSector(index: number) {
+    if (index < 0 || index >= SECTORS.length) return;
+    this.credits = Math.max(this.credits, START_CREDITS + [0, 500, 1000, 1600][index]);
+    this.loadSector(index);
+  }
+
   loadSector(index: number) {
     this.sectorIndex = index;
     this.paths = SECTORS[index].paths.map(p => buildPath(p));

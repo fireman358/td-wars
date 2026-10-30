@@ -16,6 +16,7 @@ const elSector = document.getElementById('sector')!;
 const btnStart = document.getElementById('btn-start') as HTMLButtonElement;
 const btnSpeed = document.getElementById('btn-speed') as HTMLButtonElement;
 const btnSound = document.getElementById('btn-sound') as HTMLButtonElement;
+const btnSector = document.getElementById('btn-sector') as HTMLButtonElement;
 const buildBar = document.getElementById('build-bar')!;
 const infoPanel = document.getElementById('info-panel')!;
 
@@ -179,6 +180,38 @@ btnStart.addEventListener('click', () => {
   refreshHud();
 });
 btnSpeed.addEventListener('click', () => engine.toggleSpeed());
+function showSectorPicker() {
+  const existing = document.getElementById('sector-picker');
+  existing?.remove();
+  const pick = document.createElement('div');
+  pick.id = 'sector-picker';
+  const buttons = SECTORS.map((s, i) => `<button class="pick-btn" data-i="${i}">
+      <span class="pick-name">${s.name}</span>
+      <span class="pick-sub">${(s as any).subtitle}</span>
+    </button>`).join('');
+  pick.innerHTML = `<h3>Choisir un secteur</h3><div class="pick-list">${buttons}</div>
+    <p class="pick-note">Mode test : crédits bonus accordés selon le secteur</p>`;
+  document.getElementById('game-wrap')!.appendChild(pick);
+  pick.addEventListener('click', (ev) => {
+    const target = ev.target as HTMLElement;
+    const btn = target.closest('.pick-btn') as HTMLElement | null;
+    if (btn && !btn.hasAttribute('disabled')) {
+      engine.jumpToSector(Number(btn.dataset.i));
+      hideInfo();
+      pick.remove();
+      refreshHud();
+    } else if (ev.target === pick) {
+      pick.remove();
+    }
+  });
+}
+
+btnSector.addEventListener('click', () => {
+  const pick = document.getElementById('sector-picker');
+  if (pick) pick.remove();
+  else showSectorPicker();
+});
+
 btnSound.addEventListener('click', () => {
   engine.toggleSound();
   btnSound.textContent = engine.sfx.enabled ? '🔊' : '🔇';

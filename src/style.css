@@ -163,3 +163,34 @@ body {
 #sector-intro.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 #sector-intro h2 { color: #ffd23f; letter-spacing: 3px; font-size: 24px; margin-bottom: 8px; }
 #sector-intro p { color: #a9c4ec; font-size: 13px; }
+
+#sector-picker {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 10;
+  backdrop-filter: blur(3px);
+}
+#sector-picker h3 { color: #ffd23f; letter-spacing: 2px; }
+.pick-list { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; max-width: 780px; }
+.pick-btn {
+  width: 180px;
+  padding: 14px 12px;
+  background: rgba(13, 21, 38, 0.95);
+  border: 1px solid #24406b;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  color: #cfe3ff;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.pick-btn:hover:not([disabled]) { border-color: #ffd23f; transform: translateY(-2px); }
+.pick-btn[disabled] { opacity: 0.35; cursor: default; }
+.pick-name { display: block; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.pick-sub { display: block; font-size: 11px; color: #7fa3d6; }
+.pick-note { font-size: 11px; color: #7fa3d6; font-style: italic; }
