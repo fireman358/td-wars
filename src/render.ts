@@ -58,6 +58,7 @@ export class Renderer {
     const ctx = this.ctx;
     this.drawTheme(ctx);
     this.drawPaths(ctx);
+    this.drawProps(ctx);
     this.drawBase(ctx);
     this.drawRangePreview(ctx);
     for (const t of this.engine.towers) this.drawTower(ctx, t);
@@ -117,6 +118,73 @@ export class Renderer {
     ctx.globalAlpha = 1;
   }
 
+  private drawSunBloom(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string) {
+    const bloom = ctx.createRadialGradient(x, y, r * 0.5, x, y, r * 4);
+    bloom.addColorStop(0, color);
+    bloom.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bloom;
+    ctx.beginPath();
+    ctx.arc(x, y, r * 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  private drawProps(ctx: CanvasRenderingContext2D) {
+    const seeded = (i: number) => ({ x: (i * 173 + 61) % GRID_W, y: (i * 97 + 130) % GRID_H });
+    const theme = this.theme();
+    for (let i = 0; i < 12; i++) {
+      const p = seeded(i);
+      const near = SECTORS[this.engine.sectorIndex].paths.some(
+        (path) => path.some((pt, j) => j < path.length && Math.hypot(pt.x - p.x, pt.y - p.y) < 60)
+      );
+      if (near) continue;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
+      if (theme === 'desert') {
+        ctx.beginPath();
+        ctx.ellipse(3, 5, 12, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#5c3d1e';
+        ctx.beginPath();
+        ctx.arc(0, 0, 7 + (i % 4), 0, Math.PI * 2);
+        ctx.fill();
+      } else if (theme === 'ice') {
+        ctx.beginPath();
+        ctx.ellipse(3, 5, 10, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#b9cfe6';
+        ctx.beginPath();
+        ctx.arc(0, 0, 4 + (i % 3) * 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#7a94b8';
+        ctx.beginPath();
+        ctx.arc(0, -3, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (theme === 'forest') {
+        ctx.beginPath();
+        ctx.ellipse(3, 5, 11, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#4a3520';
+        ctx.fillRect(-2, -8, 4, 12);
+        ctx.fillStyle = '#2c4a28';
+        ctx.beginPath();
+        ctx.arc(0, -10, 8, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(3, 5, 11, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#2c3550';
+        ctx.fillRect(-4, -8, 8, 12);
+        ctx.fillStyle = 'rgba(255, 200, 90, 0.5)';
+        ctx.fillRect(-2, -5, 2, 2);
+      }
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   private drawDesert(ctx: CanvasRenderingContext2D) {
     const g = ctx.createLinearGradient(0, 0, 0, GRID_H);
     g.addColorStop(0, '#2b1a3f');
@@ -126,6 +194,7 @@ export class Renderer {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, GRID_W, GRID_H);
     this.drawStars(ctx, 0.5);
+    this.drawSunBloom(ctx, 700, 110, 60, 'rgba(255, 240, 190, 0.55)');
     const s1 = ctx.createRadialGradient(700, 110, 5, 700, 110, 60);
     s1.addColorStop(0, 'rgba(255, 240, 190, 0.95)');
     s1.addColorStop(1, 'rgba(255, 240, 190, 0)');
@@ -297,17 +366,52 @@ export class Renderer {
   private drawPath(ctx: CanvasRenderingContext2D, pts: Vec[]) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = 'rgba(30, 35, 50, 0.55)';
-    ctx.lineWidth = PATH_WIDTH + 10;
+    const theme = this.theme();
+    const colors: Record<string, [string, string, string]> = {
+      desert: ['#6b4a26', '#a8845a', 'rgba(60, 40, 20, 0.35)'],
+      ice: ['#2c4a6e', '#9fb4cc', 'rgba(160, 200, 240, 0.4)'],
+      forest: ['#2c4224', '#54663d', 'rgba(30, 50, 25, 0.4)'],
+      city: ['#232a42', '#3c4a70', 'rgba(120, 150, 220, 0.35)'],
+    };
+    const [edge, fill, dash] = colors[theme] ?? colors.desert;
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = PATH_WIDTH + 8;
     this.stroke(ctx, pts);
-    ctx.strokeStyle = '#131a2e';
+    ctx.strokeStyle = fill;
     ctx.lineWidth = PATH_WIDTH;
     this.stroke(ctx, pts);
-    ctx.strokeStyle = 'rgba(150, 190, 255, 0.16)';
+    this.drawPathTexture(ctx, pts, theme);
+    ctx.strokeStyle = dash;
     ctx.lineWidth = 1.5;
     ctx.setLineDash([8, 12]);
     this.stroke(ctx, pts);
     ctx.setLineDash([]);
+  }
+
+  private drawPathTexture(ctx: CanvasRenderingContext2D, pts: Vec[], theme: string) {
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i];
+      const b = pts[i + 1];
+      const len = Math.hypot(b.x - a.x, b.y - a.y);
+      const steps = Math.floor(len / 26);
+      for (let s = 1; s < steps; s++) {
+        const t = s / steps;
+        const x = a.x + (b.x - a.x) * t;
+        const y = a.y + (b.y - a.y) * t;
+        const r = 3 + ((x * 13 + y * 7) % 5);
+        ctx.globalAlpha = 0.18 + ((x + y) % 3) * 0.06;
+        if (theme === 'city') {
+          ctx.fillStyle = '#2c3550';
+          ctx.fillRect(x - 7, y - 7, 14, 14);
+        } else {
+          ctx.fillStyle = theme === 'ice' ? '#d8e6f2' : theme === 'forest' ? '#3d5230' : '#7a5c38';
+          ctx.beginPath();
+          ctx.arc(x, y, r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+    ctx.globalAlpha = 1;
   }
 
   private stroke(ctx: CanvasRenderingContext2D, pts: Vec[]) {
@@ -438,19 +542,29 @@ export class Renderer {
 
   private drawTower(ctx: CanvasRenderingContext2D, t: Tower) {
     const { x, y } = t.pos;
+    const recoil = t.flash > 0 ? -Math.min(3, t.flash * 24) : 0;
     ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.beginPath();
+    ctx.ellipse(x + 2, y + 5, 16, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.translate(x, y);
-    ctx.fillStyle = '#0d1526';
-    ctx.strokeStyle = 'rgba(90, 130, 190, 0.5)';
+    ctx.fillStyle = '#1a2436';
+    ctx.strokeStyle = 'rgba(120, 160, 220, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(0, 0, 15, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
+    ctx.strokeStyle = 'rgba(60, 90, 140, 0.5)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 11, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.fillStyle = 'rgba(70, 100, 150, 0.25)';
     ctx.fillRect(-11, 10, 22, 4);
 
     ctx.rotate(t.angle);
+    ctx.translate(recoil, 0);
     const c = t.flash > 0 ? '#ffffff' : t.kind.color;
     switch (t.id) {
       case 'plasma':
@@ -571,6 +685,18 @@ export class Renderer {
         ctx.lineTo(22, 6);
         ctx.stroke();
         break;
+    }
+    if (t.flash > 0 && t.kind.kind !== 'income') {
+      const glowA = Math.min(1, t.flash * 8);
+      ctx.save();
+      ctx.shadowColor = t.kind.accent;
+      ctx.shadowBlur = 14 * glowA;
+      ctx.fillStyle = t.kind.accent;
+      ctx.globalAlpha = glowA * 0.9;
+      ctx.beginPath();
+      ctx.arc(24, 0, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
     ctx.restore();
 

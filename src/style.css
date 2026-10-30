@@ -135,7 +135,7 @@ body {
 }
 
 .build-btn {
-  padding: 6px 4px;
+  padding: 6px 4px 4px;
   width: 92px;
   background: rgba(13, 21, 38, 0.9);
   border: 1px solid #24406b;
@@ -146,8 +146,9 @@ body {
 }
 .build-btn:hover { border-color: #ffd23f; }
 .build-btn.selected { border-color: #ffd23f; box-shadow: 0 0 10px rgba(255, 210, 63, 0.5); }
-.build-btn .name { font-size: 12px; font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.build-btn .cost { font-size: 12px; color: #6fe08a; display: block; margin-top: 3px; }
+.build-btn .name { font-size: 11px; font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.build-btn .cost { font-size: 12px; font-weight: 700; color: #6fe08a; display: block; margin-top: 2px; }
+.build-icon { display: block; margin: 0 auto 2px; }
 .build-btn.locked { opacity: 0.45; cursor: default; }
 
 #play-row {
@@ -354,3 +355,24 @@ body {
 #app:fullscreen #game { max-height: calc(100vh - 220px); }
 .meta-help { max-width: 780px; text-align: left; font-size: 13px; color: #a9c4ec; line-height: 1.7; display: flex; flex-direction: column; gap: 8px; background: #0d1526; border: 1px solid #24406b; border-radius: 10px; padding: 16px 20px; }
 .meta-help b { color: #ffd23f; }
+
+.perk-card .p-icon { font-size: 34px; line-height: 1; margin-bottom: 10px; }
+.perk-buy {
+  width: 100%;
+  padding: 10px 8px;
+  background: linear-gradient(180deg, #ffd23f, #e8a818);
+  color: #221a00;
+  border: 1px solid #ffe9a8;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 13px;
+  transition: transform 0.12s, box-shadow 0.12s, filter 0.12s;
+}
+.perk-buy:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(255, 210, 63, 0.5);
+  filter: brightness(1.1);
+}
+.perk-buy:active:not(:disabled) { transform: translateY(0); }
+.perk-buy:disabled { opacity: 0.35; cursor: default; background: #4a5568; border-color: #4a5568; color: #a0aab8; }
