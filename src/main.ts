@@ -122,6 +122,25 @@ function showHelp(force = false) {
   void force;
 }
 
+let creditClicks = 0;
+let creditTimer = 0;
+const creditName = document.getElementById('credit-name')!;
+creditName.addEventListener('click', () => {
+  creditClicks++;
+  window.clearTimeout(creditTimer);
+  creditTimer = window.setTimeout(() => { creditClicks = 0; }, 2000);
+  if (creditClicks >= 3) {
+    creditClicks = 0;
+    const btn = document.getElementById('btn-sector') as HTMLButtonElement;
+    btn.style.display = '';
+    btn.classList.add('primary');
+    btn.title = 'Mode test';
+    creditName.classList.add('unlocked');
+    creditName.title = 'Mode test débloqué ✔';
+    engine.sfx.build();
+  }
+});
+
 const btnHelp = document.getElementById('btn-help') as HTMLButtonElement;
 btnHelp.addEventListener('click', () => {
   const p = document.getElementById('help-panel');
