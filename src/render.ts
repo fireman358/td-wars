@@ -22,7 +22,7 @@ interface Flake {
 
 export class Renderer {
   ctx: CanvasRenderingContext2D;
-  graphicsMode: '2d' | '2.5d' = '2.5d';
+  graphicsMode: '2d' | '2.5d' | 'iso' = '2.5d';
   selectedTower: Tower | null = null;
   buildPreview: { kindId: string; valid: boolean } | null = null;
   mouse: Vec = { x: -100, y: -100 };
@@ -57,9 +57,17 @@ export class Renderer {
     this.t += dt;
     if (this.hyperT > 0) this.hyperT -= dt;
     const ctx = this.ctx;
+    ctx.save();
+    if (this.graphicsMode === 'iso') {
+      // perspective isometrique : aplatissement vertical + deplacement diagonal
+      const scaleY = 0.62;
+      const skewX = -0.28;
+      const offY = 90;
+      ctx.transform(1, skewX * scaleY, 0, scaleY, 0, offY);
+    }
     this.drawTheme(ctx);
     this.drawPaths(ctx);
-    if (this.graphicsMode === '2.5d') this.drawProps(ctx);
+    if (this.graphicsMode !== '2d') this.drawProps(ctx);
     this.drawBase(ctx);
     this.drawRangePreview(ctx);
     for (const t of this.engine.towers) this.drawTower(ctx, t);
@@ -71,6 +79,7 @@ export class Renderer {
     this.drawPortals(ctx);
     if (this.hyperT > 0) this.drawHyperspace(ctx, dt);
     this.drawSaber(ctx);
+    ctx.restore();
   }
 
   private drawSaber(ctx: CanvasRenderingContext2D) {
@@ -456,6 +465,19 @@ export class Renderer {
     const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.4);
     ctx.save();
     ctx.translate(x, y);
+    if (this.graphicsMode === '2d') {
+      ctx.fillStyle = '#24406b';
+      ctx.fillRect(-26, -18, 52, 36);
+      ctx.strokeStyle = '#ffd23f';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(-26, -18, 52, 36);
+      ctx.fillStyle = '#ffd23f';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('BASE', 0, 4);
+      ctx.restore();
+      return;
+    }
     switch (this.theme()) {
       case 'desert': {
         ctx.fillStyle = '#c8b090';
@@ -586,24 +608,26 @@ export class Renderer {
     const { x, y } = t.pos;
     const recoil = t.flash > 0 ? -Math.min(3, t.flash * 24) : 0;
     ctx.save();
-    if (this.graphicsMode === '2.5d') {
+    if (this.graphicsMode !== '2d') {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
       ctx.beginPath();
       ctx.ellipse(x + 2, y + 5, 16, 11, 0, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.translate(x, y);
-    ctx.fillStyle = '#1a2436';
+    ctx.fillStyle = this.graphicsMode === '2d' ? '#131a28' : '#1a2436';
     ctx.strokeStyle = 'rgba(120, 160, 220, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(0, 0, 15, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    ctx.strokeStyle = 'rgba(60, 90, 140, 0.5)';
-    ctx.beginPath();
-    ctx.arc(0, 0, 11, 0, Math.PI * 2);
-    ctx.stroke();
+    if (this.graphicsMode !== '2d') {
+      ctx.strokeStyle = 'rgba(60, 90, 140, 0.5)';
+      ctx.beginPath();
+      ctx.arc(0, 0, 11, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.fillStyle = 'rgba(70, 100, 150, 0.25)';
     ctx.fillRect(-11, 10, 22, 4);
 
@@ -791,8 +815,10 @@ export class Renderer {
     ctx.rotate(dir);
     const body = e.hitFlash > 0 ? '#ffffff' : e.kind.color;
     const r = e.kind.radius;
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 4;
+    if (this.graphicsMode !== '2d') {
+      ctx.shadowColor = 'rgba(0,0,0,0.6)';
+      ctx.shadowBlur = 4;
+    }
     switch (e.kind.shape) {
       case 'drone':
         ctx.fillStyle = body;

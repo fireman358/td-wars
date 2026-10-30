@@ -168,9 +168,8 @@ function applySettings(s: Settings) {
   settings.volume = s.volume;
   settings.graphics = s.graphics;
   saveSettings(settings);
-  btnSound.textContent = s.sfx ? '🔊' : '🔇';
-  btnMusic.textContent = s.music ? '🎵' : '🎶';
-  btnMusic.style.opacity = s.music ? '1' : '0.5';
+  globalMute = !s.sfx && !s.music;
+  btnSound.textContent = globalMute ? '🔇' : '🔊';
 }
 
 function showSettingsPanel() {
@@ -206,6 +205,7 @@ function showSettingsPanel() {
         <select id="set-graphics">
           <option value="2.5d" ${settings.graphics === '2.5d' ? 'selected' : ''}>2.5D (détaillé)</option>
           <option value="2d" ${settings.graphics === '2d' ? 'selected' : ''}>2D (performance)</option>
+          ${engine.devMode ? `<option value="iso" ${settings.graphics === 'iso' ? 'selected' : ''}>Isométrique (expérimental)</option>` : ''}
         </select>
       </div>
     </div>
@@ -217,7 +217,7 @@ function showSettingsPanel() {
     sfx: (panel.querySelector('#set-sfx') as HTMLSelectElement).value === 'on',
     music: (panel.querySelector('#set-music') as HTMLSelectElement).value === 'on',
     volume: Number((panel.querySelector('#set-volume') as HTMLInputElement).value) / 100,
-    graphics: (panel.querySelector('#set-graphics') as HTMLSelectElement).value as '2d' | '2.5d',
+    graphics: (panel.querySelector('#set-graphics') as HTMLSelectElement).value as '2d' | '2.5d' | 'iso',
   });
   panel.querySelector('#set-sfx')!.addEventListener('change', apply);
   panel.querySelector('#set-music')!.addEventListener('change', apply);
@@ -682,17 +682,20 @@ btnSector.addEventListener('click', () => {
   else showSectorPicker();
 });
 
+let globalMute = !settings.sfx;
+function applyGlobalMute() {
+  engine.sfx.enabled = !globalMute;
+  engine.sfx.musicEnabled = !globalMute;
+  if (globalMute) engine.sfx.stopMusic();
+  else engine.sfx.startMusic();
+  btnSound.textContent = globalMute ? '🔇' : '🔊';
+  settings.sfx = !globalMute;
+  settings.music = !globalMute;
+  saveSettings(settings);
+}
 btnSound.addEventListener('click', () => {
-  engine.toggleSound();
-  btnSound.textContent = engine.sfx.enabled ? '🔊' : '🔇';
-});
-
-const btnMusic = document.getElementById('btn-music') as HTMLButtonElement;
-btnMusic.addEventListener('click', () => {
-  const on = engine.sfx.toggleMusic();
-  btnMusic.textContent = on ? '🎵' : '🎶';
-  btnMusic.style.opacity = on ? '1' : '0.5';
-  if (on) engine.sfx.startMusic();
+  globalMute = !globalMute;
+  applyGlobalMute();
 });
 
 // demarrage de la musique au premier interaction (autoplay policy)
