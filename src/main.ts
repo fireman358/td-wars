@@ -603,6 +603,23 @@ btnSound.addEventListener('click', () => {
   btnSound.textContent = engine.sfx.enabled ? '🔊' : '🔇';
 });
 
+const btnMusic = document.getElementById('btn-music') as HTMLButtonElement;
+btnMusic.addEventListener('click', () => {
+  const on = engine.sfx.toggleMusic();
+  btnMusic.textContent = on ? '🎵' : '🎶';
+  btnMusic.style.opacity = on ? '1' : '0.5';
+  if (on) engine.sfx.startMusic();
+});
+
+// demarrage de la musique au premier interaction (autoplay policy)
+let musicStarted = false;
+window.addEventListener('pointerdown', () => {
+  if (!musicStarted) {
+    musicStarted = true;
+    engine.sfx.startMusic();
+  }
+}, { once: true });
+
 canvas.addEventListener('mousemove', (ev) => {
   const pos = posFromEvent(ev);
   renderer.mouse = pos;
