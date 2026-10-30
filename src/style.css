@@ -14,36 +14,60 @@ body {
 
 #hud {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px 12px;
   background: linear-gradient(180deg, #0d1526, #0a1020);
   border: 1px solid #24406b;
   border-bottom: none;
   border-radius: 10px 10px 0 0;
 }
 
-.hud-left { display: flex; align-items: center; gap: 10px; }
+.hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
 
 .brand {
   font-weight: 800;
   letter-spacing: 3px;
   color: #ffd23f;
   text-shadow: 0 0 12px rgba(255, 210, 63, 0.6);
-  margin-right: 12px;
 }
 
+.hud-stats { display: flex; gap: 18px; align-items: center; }
+
+.stat { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+
 .hud-label {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: #7fa3d6;
 }
 
-#credits { color: #6fe08a; font-weight: 700; margin-right: 8px; }
-#lives { color: #ff6b6b; font-weight: 700; margin-right: 8px; }
-#wave { color: #ffd23f; font-weight: 700; }
+.stat-val { font-weight: 700; font-size: 15px; line-height: 1.1; }
+.stat-val.credits { color: #6fe08a; }
+.stat-val.lives { color: #ff6b6b; }
+.stat-val.wave { color: #ffd23f; }
 
-.hud-right { display: flex; gap: 8px; }
+.sector {
+  font-size: 12px;
+  color: #a9c4ec;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.hud-saber { display: flex; align-items: center; gap: 8px; }
+
+.hud-controls { justify-content: space-between; }
+.hud-btn-group { display: flex; gap: 8px; }
+#btn-start { min-width: 220px; }
 
 .btn {
   background: #12213c;
