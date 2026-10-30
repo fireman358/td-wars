@@ -471,6 +471,17 @@ export class Renderer {
       ctx.restore();
       return;
     }
+    // faux-3D : ombre portee + socle extrude sous le batiment
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(2, 18, 42, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1a2338';
+    ctx.fillRect(-38, -4, 76, 22);
+    ctx.fillStyle = '#2a3854';
+    ctx.fillRect(-38, -10, 76, 10);
+    ctx.strokeStyle = 'rgba(120, 160, 220, 0.4)';
+    ctx.strokeRect(-38, -10, 76, 22);
     switch (this.theme()) {
       case 'desert': {
         ctx.fillStyle = '#c8b090';
@@ -629,17 +640,19 @@ export class Renderer {
       ctx.stroke();
     }
     ctx.translate(x, y - (rich ? 7 : 0));
+    // evolution visuelle : le corps grossit et gagne des anneaux par niveau
+    const bodyR = 9 + t.level * 1.5;
     ctx.fillStyle = this.graphicsMode === '2d' ? '#131a28' : '#1a2436';
     ctx.strokeStyle = 'rgba(120, 160, 220, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(0, 0, 11, 0, Math.PI * 2);
+    ctx.arc(0, 0, bodyR, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     if (rich) {
       ctx.strokeStyle = 'rgba(60, 90, 140, 0.5)';
       ctx.beginPath();
-      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.arc(0, 0, bodyR - 3, 0, Math.PI * 2);
       ctx.stroke();
     } else {
       ctx.fillStyle = 'rgba(70, 100, 150, 0.25)';
@@ -649,6 +662,7 @@ export class Renderer {
     ctx.rotate(t.angle);
     ctx.translate(recoil, 0);
     const c = t.flash > 0 ? '#ffffff' : t.kind.color;
+    const spec = t.specIndex;
     switch (t.id) {
       case 'plasma':
         ctx.fillStyle = '#2b3a52';
@@ -657,6 +671,21 @@ export class Renderer {
         ctx.fillRect(16, -2.5, 6, 5);
         ctx.fillStyle = '#3a4c68';
         ctx.fillRect(2, -8, 6, 4);
+        // spec 'Double canon' : deuxeme canon au-dessus
+        if (spec === 0) {
+          ctx.fillStyle = '#2b3a52';
+          ctx.fillRect(0, -14, 16, 8);
+          ctx.fillStyle = c;
+          ctx.fillRect(14, -12, 5, 4);
+        }
+        // spec 'Overcharge' : bobines orange le long du canon
+        if (spec === 1) {
+          ctx.fillStyle = '#e8a818';
+          for (const cx of [5, 10, 15]) {
+            ctx.fillRect(cx, -6, 3, 3);
+            ctx.fillRect(cx, 3, 3, 3);
+          }
+        }
         break;
       case 'laser':
         ctx.fillStyle = '#3a2430';
@@ -665,6 +694,20 @@ export class Renderer {
         ctx.fillRect(18, -2, 8, 4);
         ctx.fillStyle = '#583a4a';
         ctx.fillRect(4, -10, 8, 5);
+        // spec 'Faisceau perçant' : lentille focus au bout
+        if (spec === 0) {
+          ctx.fillStyle = '#ffd0d0';
+          ctx.beginPath();
+          ctx.arc(26, 0, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // spec 'Optique longue' : lunette de visee
+        if (spec === 1) {
+          ctx.fillStyle = '#583a4a';
+          ctx.fillRect(8, -12, 10, 4);
+          ctx.fillStyle = '#bfe9ff';
+          ctx.fillRect(16, -11.5, 2.5, 3);
+        }
         break;
       case 'ion':
         ctx.fillStyle = '#1f3a3f';
@@ -688,6 +731,21 @@ export class Renderer {
         for (const dy of [-6, 0, 6]) {
           ctx.fillRect(8, dy - 1.5, 10, 3);
         }
+        // spec 'Charge fracassante' : ogives doubles rouges
+        if (spec === 0) {
+          ctx.fillStyle = '#d64f2a';
+          for (const dy of [-6, 0, 6]) {
+            ctx.fillRect(16, dy - 2, 5, 4);
+          }
+        }
+        // spec 'Salve rapide' : chargeur au-dessus
+        if (spec === 1) {
+          ctx.fillStyle = '#4a3c22';
+          ctx.fillRect(-2, -16, 12, 6);
+          ctx.fillStyle = '#ffe08a';
+          ctx.fillRect(0, -14.5, 2, 3);
+          ctx.fillRect(4, -14.5, 2, 3);
+        }
         break;
       case 'tesla':
         ctx.fillStyle = '#2c1f3a';
@@ -696,9 +754,18 @@ export class Renderer {
         ctx.fill();
         ctx.strokeStyle = c;
         ctx.lineWidth = 1.5;
-        for (let i = 0; i < 3; i++) {
+        const arcs = spec === 0 ? 5 : spec === 1 ? 3 : 4;
+        for (let i = 0; i < arcs; i++) {
           ctx.beginPath();
           ctx.arc(4, 0, 6 + i * 3, this.t * 4 + i, this.t * 4 + i + 2);
+          ctx.stroke();
+        }
+        // spec 'Arc forcé' : electrodesLaterales
+        if (spec === 0) {
+          ctx.strokeStyle = c;
+          ctx.beginPath();
+          ctx.moveTo(-4, -8); ctx.lineTo(-8, -12);
+          ctx.moveTo(-4, 8); ctx.lineTo(-8, 12);
           ctx.stroke();
         }
         break;
