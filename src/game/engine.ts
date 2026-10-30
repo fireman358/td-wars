@@ -261,8 +261,11 @@ export class Engine {
     return this.towers.find(t => dist(t.pos, pos) < 16) ?? null;
   }
 
+  devMode = false;
+
   toggleSpeed() {
-    this.speed = this.speed >= 5 ? 1 : this.speed + 1;
+    const max = this.devMode ? 10 : 3;
+    this.speed = this.speed >= max ? 1 : this.speed + 1;
     this.emit({ type: 'speed' });
   }
 

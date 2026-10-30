@@ -134,6 +134,7 @@ creditName.addEventListener('click', () => {
     const btn = document.getElementById('btn-sector') as HTMLButtonElement;
     btn.style.display = '';
     btn.classList.add('primary');
+    engine.devMode = true;
     btn.title = 'Mode test';
     creditName.classList.add('unlocked');
     creditName.title = 'Mode test débloqué ✔';
