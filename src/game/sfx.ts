@@ -7,7 +7,6 @@ export class Sfx {
   private musicStopTimer = 0;
 
   private ensure(): AudioContext | null {
-    if (!this.enabled) return null;
     if (!this.ctx) {
       try {
         this.ctx = new AudioContext();
@@ -35,7 +34,7 @@ export class Sfx {
   }
 
   startMusic() {
-    if (this.musicPlaying || !this.enabled || !this.musicEnabled) return;
+    if (this.musicPlaying || !this.musicEnabled) return;
     const ctx = this.ensure();
     if (!ctx) return;
     this.musicPlaying = true;
@@ -92,6 +91,7 @@ export class Sfx {
   }
 
   tone(freq: number, dur: number, type: OscillatorType = 'sine', gain = 0.12, slide = 0) {
+    if (!this.enabled) return;
     const ctx = this.ensure();
     if (!ctx) return;
     const osc = ctx.createOscillator();
