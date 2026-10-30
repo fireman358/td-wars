@@ -58,3 +58,19 @@ export function saveMeta(m: MetaState): void {
     /* storage indisponible */
   }
 }
+
+export const RESPEC_TAX = 0.2;
+
+export function respecPoints(m: MetaState): number {
+  const spent = PERK_DEFS.reduce((total, p) => {
+    const lvl = m.perks[p.id];
+    return total + perkCost(0) * 0 + lvl * 0 + Array.from({ length: lvl }, (_, i) => perkCost(i)).reduce((a, b) => a + b, 0);
+  }, 0);
+  return Math.floor(spent * (1 - RESPEC_TAX));
+}
+
+export function resetAll(): MetaState {
+  const fresh: MetaState = { points: 0, perks: { credits: 0, lives: 0, saber: 0, shield: 0 }, bestWave: 0 };
+  saveMeta(fresh);
+  return fresh;
+}

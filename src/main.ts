@@ -2,7 +2,7 @@ import { ALL_WAVES, BUILD_ORDER, GRID_H, GRID_W, SECTORS, TOWERS } from './game/
 import { Engine } from './game/engine';
 import { TARGET_LABELS, type Tower } from './game/tower';
 import { Renderer } from './render';
-import { PERK_DEFS, perkCost, saveMeta, type PerkId } from './game/meta';
+import { PERK_DEFS, perkCost, respecPoints, resetAll, saveMeta, type PerkId } from './game/meta';
 import type { TowerKindId, Vec } from './game/types';
 
 const engine = new Engine();
@@ -545,7 +545,11 @@ function showMetaPanel() {
       <p><b>Comment gagner des points :</b> 1 point toutes les 2 vagues atteintes, +10 points bonus en fin de partie (victoire ou défaite).</p>
       <p><b>Comment ça marche :</b> les perks achetés s'appliquent automatiquement à chaque nouvelle partie. Les effets se cumulent par niveau.</p>
     </div>
-    <button id="btn-meta-close" class="btn primary">Fermer</button>`;
+    <div class="meta-actions">
+      <button id="btn-respec" class="btn">↺ Redistributionner (-20%)</button>
+      <button id="btn-reset" class="btn danger">⟲ Tout réinitialiser</button>
+      <button id="btn-meta-close" class="btn primary">Fermer</button>
+    </div>`;
   document.getElementById('canvas-holder')!.appendChild(panel);
   panel.querySelector('#btn-meta-close')!.addEventListener('click', () => panel.remove());
   panel.addEventListener('click', (ev) => {
@@ -559,6 +563,23 @@ function showMetaPanel() {
         engine.meta.points -= cost;
         engine.meta.perks[id] = lvl + 1;
         saveMeta(engine.meta);
+        showMetaPanel();
+      }
+      return;
+    }
+    if ((ev.target as HTMLElement).closest('#btn-respec')) {
+      const refund = respecPoints(engine.meta);
+      if (refund > 0 && window.confirm(`Redistribuer vos perks ?\n\nVous récupérez ${refund} points (frais de 20%).\nLes perks s'appliqueront à la prochaine partie.`)) {
+        engine.meta.points += refund;
+        engine.meta.perks = { credits: 0, lives: 0, saber: 0, shield: 0 };
+        saveMeta(engine.meta);
+        showMetaPanel();
+      }
+      return;
+    }
+    if ((ev.target as HTMLElement).closest('#btn-reset')) {
+      if (window.confirm('Tout réinitialiser ?\n\nPoints, perks et record seront remis à zéro. Action irréversible.')) {
+        engine.meta = resetAll();
         showMetaPanel();
       }
     }

@@ -549,3 +549,11 @@ body {
 
 #credit-name { cursor: default; user-select: none; }
 #credit-name.unlocked { color: #38bdf8; cursor: pointer; }
+
+.meta-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.btn.danger {
+  background: #3a1520;
+  border-color: #8a3040;
+  color: #ff9aa8;
+}
+.btn.danger:hover { background: #4a1a28; }
