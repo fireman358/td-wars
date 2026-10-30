@@ -723,6 +723,26 @@ export class Renderer {
         ctx.beginPath();
         ctx.arc(8, 0, 11, -0.8, 0.8);
         ctx.stroke();
+        // spec 'Gel profond' : cristaux de gel lateraux
+        if (spec === 0) {
+          ctx.fillStyle = '#a8fff4';
+          for (const cy of [-9, 9]) {
+            ctx.beginPath();
+            ctx.moveTo(6, cy);
+            ctx.lineTo(9, cy + 2);
+            ctx.lineTo(6, cy + 4);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+        // spec 'Champ large' : double anneau externe
+        if (spec === 1) {
+          ctx.strokeStyle = 'rgba(168, 255, 244, 0.5)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(8, 0, 14, -1.1, 1.1);
+          ctx.stroke();
+        }
         break;
       case 'missile':
         ctx.fillStyle = '#3a2f1c';
@@ -784,6 +804,23 @@ export class Renderer {
         ctx.beginPath();
         ctx.arc(10, 0, 4, 0, Math.PI * 2);
         ctx.fill();
+        // spec 'Pince renforcee' : pinces laterales
+        if (spec === 0) {
+          ctx.strokeStyle = '#ffe9a8';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(14, -6); ctx.lineTo(22, -6);
+          ctx.moveTo(14, 6); ctx.lineTo(22, 6);
+          ctx.stroke();
+        }
+        // spec 'Champ etendu' : projecteur double
+        if (spec === 1) {
+          ctx.fillStyle = '#c9a64f';
+          ctx.beginPath();
+          ctx.arc(10, -6, 2.5, 0, Math.PI * 2);
+          ctx.arc(10, 6, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
         break;
       case 'axial':
         ctx.fillStyle = '#1e2a1a';
@@ -801,6 +838,23 @@ export class Renderer {
         ctx.beginPath();
         ctx.arc(0, 0, 8, this.t * 2, this.t * 2 + 2);
         ctx.stroke();
+        // spec 'Coeur surcharge' : double orbe lumineux
+        if (spec === 0) {
+          ctx.fillStyle = '#d8ffb0';
+          ctx.shadowColor = '#7de64f';
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(22, 0, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+        // spec 'Condensateurs' : batteries dorsales
+        if (spec === 1) {
+          ctx.fillStyle = '#4a5f3a';
+          for (const cy of [-8, 8]) {
+            ctx.fillRect(2, cy - 2, 10, 4);
+          }
+        }
         break;
       case 'extractor':
         ctx.rotate(0);
@@ -834,6 +888,19 @@ export class Renderer {
         ctx.moveTo(2, 6);
         ctx.lineTo(22, 6);
         ctx.stroke();
+        // spec 'Canon allonge' : rail prolonge + contreplaque
+        if (spec === 1) {
+          ctx.fillRect(26, -1.5, 8, 3);
+          ctx.fillStyle = '#4a4f58';
+          ctx.fillRect(-2, -11, 8, 4);
+        }
+        // spec 'Conduits calibres' : cheminees de refroidissement
+        if (spec === 0) {
+          ctx.fillStyle = '#7de64f';
+          for (const cx of [6, 12, 18]) {
+            ctx.fillRect(cx, -10, 2, 3);
+          }
+        }
         break;
     }
     if (t.flash > 0 && t.kind.kind !== 'income') {
@@ -891,13 +958,21 @@ export class Renderer {
     const path = this.engine.paths[e.pathIndex];
     const ahead = this.engine.pointOnPublic(path, e.dist + 6);
     const dir = Math.atan2(ahead.y - y, ahead.x - x);
+    const rich = this.graphicsMode !== '2d';
+    // ombre au sol (posée avant la rotation)
+    if (rich) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(x + 2, y + e.kind.radius * 0.75, e.kind.radius * 0.95, e.kind.radius * 0.45, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.save();
-    ctx.translate(x, y);
+    ctx.translate(x, y - (rich ? 3 : 0));
     if (e.kind.cloak) ctx.globalAlpha = 0.5;
     ctx.rotate(dir);
     const body = e.hitFlash > 0 ? '#ffffff' : e.kind.color;
     const r = e.kind.radius;
-    if (this.graphicsMode !== '2d') {
+    if (rich) {
       ctx.shadowColor = 'rgba(0,0,0,0.6)';
       ctx.shadowBlur = 4;
     }
@@ -1039,7 +1114,7 @@ export class Renderer {
     if (e.hp < e.maxHp || e.shield < e.maxShield) {
       const w = e.kind.radius * 2.6;
       const bx = x - w / 2;
-      const by = y - e.kind.radius - 12;
+      const by = y - e.kind.radius - (rich ? 15 : 12);
       ctx.fillStyle = 'rgba(0,0,0,0.55)';
       ctx.fillRect(bx, by, w, 5);
       if (e.shield > 0) {
