@@ -444,16 +444,18 @@ export class Engine {
     }
   }
 
-  private effRange(t: Tower): number {
-    let r = t.stats.range;
-    let adjacent = false;
+  hasAdjacencyBonus(t: Tower): boolean {
     for (const o of this.towers) {
       if (o !== t && o.kind.kind !== 'income' && o.id !== t.id && dist(o.pos, t.pos) < 46) {
-        adjacent = true;
-        break;
+        return true;
       }
     }
-    if (adjacent) r *= 1.1;
+    return false;
+  }
+
+  private effRange(t: Tower): number {
+    let r = t.stats.range;
+    if (this.hasAdjacencyBonus(t)) r *= 1.1;
     return r;
   }
 

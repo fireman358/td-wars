@@ -352,7 +352,7 @@ function showTowerInfo(t: Tower) {
   const statsRows = k.kind === 'income'
     ? incomeRow
     : `<div class="row"><span class="k">Dégâts</span><span>${Math.round(s.damage)}</span></div>
-    <div class="row"><span class="k">Portée</span><span>${Math.round(s.range)}</span></div>
+    <div class="row"><span class="k">Portée</span><span>${Math.round(s.range)}${engine.hasAdjacencyBonus(t) ? ' <b style="color:#6fe08a">(+10% adj.)</b>' : ''}</span></div>
     <div class="row"><span class="k">Cadence</span><span>${Math.round(s.fireRate * 10) / 10}/s</span></div>
     ${k.kind === 'splash' ? `<div class="row"><span class="k">Zone</span><span>${Math.round(s.splashRadius)}</span></div>` : ''}
     ${k.kind === 'slow' ? `<div class="row"><span class="k">Ralentit</span><span>x${Math.round(s.slowFactor * 100) / 100}</span></div>` : ''}

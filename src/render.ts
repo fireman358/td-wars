@@ -708,6 +708,31 @@ export class Renderer {
         ctx.fill();
       }
     }
+
+    if (t.kind.kind !== 'income' && this.engine.hasAdjacencyBonus(t)) {
+      const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.5);
+      ctx.strokeStyle = `rgba(111, 224, 138, ${0.3 + pulse * 0.3})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y, 18, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(111, 224, 138, ${0.85})`;
+      ctx.beginPath();
+      ctx.arc(x + 13, y - 13, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#0a3d1a';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(x + 13, y - 16);
+      ctx.lineTo(x + 13, y - 10);
+      ctx.moveTo(x + 10, y - 13);
+      ctx.lineTo(x + 16, y - 13);
+      ctx.moveTo(x + 10.5, y - 16.5);
+      ctx.lineTo(x + 15.5, y - 16.5);
+      ctx.moveTo(x + 10.5, y - 9.5);
+      ctx.lineTo(x + 15.5, y - 9.5);
+      ctx.stroke();
+    }
   }
 
   private drawEnemy(ctx: CanvasRenderingContext2D, e: Enemy) {
