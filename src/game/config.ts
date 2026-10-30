@@ -384,16 +384,16 @@ function genWave(w: number, d: number, entries: number): Wave {
     const p = w % 5;
     if (p === 1) {
       name = w < 10 ? 'Patrouille légère' : 'Escadron rapide';
-      groups = [g(w % 6 === 1 ? 'drone' : 'fighter', 8 + w / 3, 0.55, 0, m), g('drone', 8, 0.7, 5, m * 1.1)];
+      groups = [g(w % 6 === 1 ? 'drone' : 'fighter', 8 + Math.floor(w / 3), 0.55, 0, m), g('drone', 8, 0.7, 5, m * 1.1)];
     } else if (p === 2) {
       name = 'Troupes au sol';
-      groups = [g('soldier', 10 + w / 2, 0.5, 0, m), g(w % 4 === 2 ? 'drone' : 'fighter', 8, 0.6, 6, m)];
+      groups = [g('soldier', 10 + Math.floor(w / 2), 0.5, 0, m), g(w % 4 === 2 ? 'drone' : 'fighter', 8, 0.6, 6, m)];
     } else if (p === 3) {
       name = 'Force de frappe';
-      groups = [g('fighter', 12 + w / 3, 0.45, 0, m), g('stealth', 5 + w / 6, 1.1, 5, m)];
+      groups = [g('fighter', 12 + Math.floor(w / 3), 0.45, 0, m), g('stealth', 5 + Math.floor(w / 6), 1.1, 5, m)];
     } else {
       name = 'Blindage lourd';
-      groups = [g('tank', 3 + w / 5, 2, 0, m), g('soldier', 12, 0.5, 4, m), g(w % 3 === 4 ? 'healer' : 'stealth', 4, 1.2, 8, m)];
+      groups = [g('tank', 3 + Math.floor(w / 5), 2, 0, m), g('soldier', 12, 0.5, 4, m), g(w % 3 === 4 ? 'healer' : 'stealth', 4, 1.2, 8, m)];
     }
   }
   return { name, entries, groups, reward };
