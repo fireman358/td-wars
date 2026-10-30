@@ -3,6 +3,7 @@ import { Engine } from './game/engine';
 import { TARGET_LABELS, type Tower } from './game/tower';
 import { Renderer } from './render';
 import { PERK_DEFS, perkCost, respecPoints, resetAll, saveMeta, type PerkId } from './game/meta';
+import { loadSettings, saveSettings, type Settings } from './game/settings';
 import type { TowerKindId, Vec } from './game/types';
 
 const engine = new Engine();
@@ -147,6 +148,89 @@ btnHelp.addEventListener('click', () => {
   const p = document.getElementById('help-panel');
   if (p) p.remove();
   else showHelp(true);
+});
+
+const settings = loadSettings();
+renderer.graphicsMode = settings.graphics;
+engine.sfx.enabled = settings.sfx;
+engine.sfx.musicEnabled = settings.music;
+
+function applySettings(s: Settings) {
+  engine.sfx.enabled = s.sfx;
+  if (s.music !== engine.sfx.musicEnabled) {
+    engine.sfx.musicEnabled = s.music;
+    if (s.music) engine.sfx.startMusic(); else engine.sfx.stopMusic();
+  }
+  engine.sfx.setVolume(s.volume);
+  renderer.graphicsMode = s.graphics;
+  settings.sfx = s.sfx;
+  settings.music = s.music;
+  settings.volume = s.volume;
+  settings.graphics = s.graphics;
+  saveSettings(settings);
+  btnSound.textContent = s.sfx ? '🔊' : '🔇';
+  btnMusic.textContent = s.music ? '🎵' : '🎶';
+  btnMusic.style.opacity = s.music ? '1' : '0.5';
+}
+
+function showSettingsPanel() {
+  const existing = document.getElementById('settings-panel');
+  existing?.remove();
+  const panel = document.createElement('div');
+  panel.id = 'settings-panel';
+  panel.innerHTML = `
+    <h3>PARAMÈTRES</h3>
+    <div class="settings-box">
+      <h4>Audio</h4>
+      <div class="settings-row">
+        <label>Bruits sonores</label>
+        <select id="set-sfx">
+          <option value="on" ${settings.sfx ? 'selected' : ''}>Activés</option>
+          <option value="off" ${!settings.sfx ? 'selected' : ''}>Coupés</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <label>Musique</label>
+        <select id="set-music">
+          <option value="on" ${settings.music ? 'selected' : ''}>Activée</option>
+          <option value="off" ${!settings.music ? 'selected' : ''}>Coupée</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <label>Volume général</label>
+        <input type="range" id="set-volume" min="0" max="100" value="${Math.round(settings.volume * 100)}">
+      </div>
+      <h4 style="margin-top:14px">Graphismes</h4>
+      <div class="settings-row">
+        <label>Mode de rendu</label>
+        <select id="set-graphics">
+          <option value="2.5d" ${settings.graphics === '2.5d' ? 'selected' : ''}>2.5D (détaillé)</option>
+          <option value="2d" ${settings.graphics === '2d' ? 'selected' : ''}>2D (performance)</option>
+        </select>
+      </div>
+    </div>
+    <p class="settings-note">2.5D : ombres portées, textures du terrain, éléments d'ambiance.<br>2D : rendu épuré, plus rapide sur petites configurations.</p>
+    <button id="btn-settings-close" class="btn primary">Fermer</button>`;
+  document.body.appendChild(panel);
+
+  const apply = () => applySettings({
+    sfx: (panel.querySelector('#set-sfx') as HTMLSelectElement).value === 'on',
+    music: (panel.querySelector('#set-music') as HTMLSelectElement).value === 'on',
+    volume: Number((panel.querySelector('#set-volume') as HTMLInputElement).value) / 100,
+    graphics: (panel.querySelector('#set-graphics') as HTMLSelectElement).value as '2d' | '2.5d',
+  });
+  panel.querySelector('#set-sfx')!.addEventListener('change', apply);
+  panel.querySelector('#set-music')!.addEventListener('change', apply);
+  panel.querySelector('#set-volume')!.addEventListener('input', apply);
+  panel.querySelector('#set-graphics')!.addEventListener('change', apply);
+  panel.querySelector('#btn-settings-close')!.addEventListener('click', () => panel.remove());
+}
+
+const btnSettings = document.getElementById('btn-settings') as HTMLButtonElement;
+btnSettings.addEventListener('click', () => {
+  const p = document.getElementById('settings-panel');
+  if (p) p.remove();
+  else showSettingsPanel();
 });
 
 let helpSeen = false;

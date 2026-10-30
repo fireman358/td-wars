@@ -22,6 +22,7 @@ interface Flake {
 
 export class Renderer {
   ctx: CanvasRenderingContext2D;
+  graphicsMode: '2d' | '2.5d' = '2.5d';
   selectedTower: Tower | null = null;
   buildPreview: { kindId: string; valid: boolean } | null = null;
   mouse: Vec = { x: -100, y: -100 };
@@ -58,7 +59,7 @@ export class Renderer {
     const ctx = this.ctx;
     this.drawTheme(ctx);
     this.drawPaths(ctx);
-    this.drawProps(ctx);
+    if (this.graphicsMode === '2.5d') this.drawProps(ctx);
     this.drawBase(ctx);
     this.drawRangePreview(ctx);
     for (const t of this.engine.towers) this.drawTower(ctx, t);
@@ -379,7 +380,7 @@ export class Renderer {
     ctx.strokeStyle = fill;
     ctx.lineWidth = PATH_WIDTH;
     this.stroke(ctx, pts);
-    this.drawPathTexture(ctx, pts, theme);
+    if (this.graphicsMode === '2.5d') this.drawPathTexture(ctx, pts, theme);
     ctx.strokeStyle = dash;
     ctx.lineWidth = 1.5;
     ctx.setLineDash([8, 12]);
@@ -585,10 +586,12 @@ export class Renderer {
     const { x, y } = t.pos;
     const recoil = t.flash > 0 ? -Math.min(3, t.flash * 24) : 0;
     ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-    ctx.beginPath();
-    ctx.ellipse(x + 2, y + 5, 16, 11, 0, 0, Math.PI * 2);
-    ctx.fill();
+    if (this.graphicsMode === '2.5d') {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(x + 2, y + 5, 16, 11, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.translate(x, y);
     ctx.fillStyle = '#1a2436';
     ctx.strokeStyle = 'rgba(120, 160, 220, 0.6)';

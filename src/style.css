@@ -557,3 +557,48 @@ body {
   color: #ff9aa8;
 }
 .btn.danger:hover { background: #4a1a28; }
+
+#settings-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+  z-index: 55;
+  padding: 36px 20px;
+  overflow-y: auto;
+}
+#settings-panel h3 { color: #ffd23f; letter-spacing: 3px; }
+.settings-box {
+  width: min(480px, 100%);
+  background: #0d1526;
+  border: 1px solid #2c4a7a;
+  border-radius: 12px;
+  padding: 18px 24px;
+  color: #cfe3ff;
+  font-size: 13.5px;
+}
+.settings-box h4 { color: #38bdf8; margin: 0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #1a2440;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row label { color: #a9c4ec; }
+.settings-row select, .settings-row input[type="range"] {
+  background: #1a2436;
+  border: 1px solid #2c4a7a;
+  color: #e8f0fc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.settings-row input[type="range"] { width: 160px; padding: 0; }
+.settings-note { font-size: 11px; color: #7fa3d6; font-style: italic; }

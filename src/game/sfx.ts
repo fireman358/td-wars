@@ -2,6 +2,7 @@ export class Sfx {
   private ctx: AudioContext | null = null;
   enabled = true;
   musicEnabled = true;
+  private masterVol = 0.8;
   private musicPlaying = false;
   private musicNodes: { osc: OscillatorNode; gain: GainNode }[] = [];
   private musicStopTimer = 0;
@@ -25,7 +26,7 @@ export class Sfx {
     osc.type = type;
     osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
     g.gain.setValueAtTime(0, ctx.currentTime + start);
-    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + start + 0.02);
+    g.gain.linearRampToValueAtTime(vol * this.masterVol, ctx.currentTime + start + 0.02);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
     p.pan.setValueAtTime(pan, ctx.currentTime);
     osc.connect(g).connect(p).connect(ctx.destination);
@@ -56,6 +57,10 @@ export class Sfx {
       }
     }
     this.musicNodes = [];
+  }
+
+  setVolume(v: number) {
+    this.masterVol = Math.max(0, Math.min(1, v));
   }
 
   toggleMusic() {
@@ -117,7 +122,7 @@ export class Sfx {
     lfo.type = 'sine';
     lfo.frequency.value = 6;
     lfoGain.gain.value = 4;
-    gain.gain.value = 0.06;
+    gain.gain.value = 0.06 * this.masterVol;
     lfo.connect(lfoGain);
     lfoGain.connect(osc.frequency);
     lfoGain.connect(osc2.frequency);
@@ -141,7 +146,7 @@ export class Sfx {
     const base = 140 + Math.min(400, speed * 3);
     osc.frequency.setValueAtTime(base, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(Math.max(60, base * 0.4), ctx.currentTime + 0.18);
-    g.gain.setValueAtTime(0.09, ctx.currentTime);
+    g.gain.setValueAtTime(0.09 * this.masterVol, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
     osc.connect(g).connect(ctx.destination);
     osc.start();
@@ -172,7 +177,7 @@ export class Sfx {
     if (slide !== 0) {
       osc.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), ctx.currentTime + dur);
     }
-    g.gain.setValueAtTime(gain, ctx.currentTime);
+    g.gain.setValueAtTime(gain * this.masterVol, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
     osc.connect(g).connect(ctx.destination);
     osc.start();
