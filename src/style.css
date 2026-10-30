@@ -393,3 +393,68 @@ body {
 #wave-preview .wp-empty { color: #7fa3d6; font-style: italic; }
 
 .stat-val.shield { color: #4fc3f7; }
+
+#studio-splash {
+  position: absolute;
+  inset: 0;
+  background: #05070f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  animation: splash-bg 2.6s ease forwards;
+  pointer-events: none;
+}
+.splash-inner { text-align: center; }
+.splash-logo {
+  font-size: 54px;
+  font-weight: 900;
+  letter-spacing: 14px;
+  color: #ffd23f;
+  text-shadow: 0 0 30px rgba(255, 210, 63, 0.5), 0 0 60px rgba(255, 210, 63, 0.25);
+  animation: splash-logo 2.6s ease forwards;
+}
+.splash-sub {
+  margin-top: 14px;
+  font-size: 16px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: #7fa3d6;
+  animation: splash-sub 2.6s ease forwards;
+}
+@keyframes splash-logo {
+  0% { opacity: 0; transform: scale(0.86); letter-spacing: 24px; }
+  25% { opacity: 1; transform: scale(1); letter-spacing: 14px; }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+@keyframes splash-sub {
+  0%, 15% { opacity: 0; }
+  35% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes splash-bg {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
+#site-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 0 4px;
+  font-size: 12.5px;
+  color: #7fa3d6;
+}
+#site-footer a {
+  color: #ffd23f;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-decoration: none;
+  transition: text-shadow 0.15s;
+}
+#site-footer a:hover { text-shadow: 0 0 12px rgba(255, 210, 63, 0.7); }
+#site-footer a.muted { color: #9fbde8; font-weight: 400; letter-spacing: 0; }
+#site-footer .sep { color: #3a5075; }
