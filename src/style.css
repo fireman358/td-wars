@@ -146,14 +146,19 @@ body {
 .build-btn.locked { opacity: 0.45; cursor: default; }
 
 #info-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
   width: 250px;
-  padding: 6px 10px;
-  background: rgba(13, 21, 38, 0.92);
+  padding: 8px 12px;
+  background: rgba(13, 21, 38, 0.94);
   border: 1px solid #24406b;
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 12px;
   display: none;
-  overflow: hidden;
+  z-index: 5;
+  max-height: calc(100% - 20px);
+  overflow-y: auto;
 }
 #info-panel .row { margin: 2px 0; }
 #info-panel h3 { font-size: 12px; margin-bottom: 4px; }
@@ -305,3 +310,4 @@ body {
 }
 #app:fullscreen #game-wrap { flex: 0 0 auto; }
 #app:fullscreen #hud { border-radius: 10px 10px 0 0; }
+#app:fullscreen #game { max-height: calc(100vh - 220px); }

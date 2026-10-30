@@ -7,6 +7,7 @@ import type { TowerKindId, Vec } from './game/types';
 
 const engine = new Engine();
 const canvas = document.getElementById('game') as HTMLCanvasElement;
+const hud = document.getElementById('hud')!;
 const renderer = new Renderer(canvas, engine);
 
 const elCredits = document.getElementById('credits')!;
@@ -36,12 +37,17 @@ function posFromEvent(ev: MouseEvent): Vec {
 
 function resizeCanvas(): void {
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  const cssW = rect.width || GRID_W;
-  const scale = cssW / GRID_W;
-  canvas.width = Math.round(GRID_W * dpr * scale);
-  canvas.height = Math.round(GRID_H * dpr * scale);
-  renderer.ctx.setTransform((dpr * scale), 0, 0, (dpr * scale), 0, 0);
+  const wrap = document.getElementById('game-wrap')!;
+  const availW = wrap.clientWidth || GRID_W;
+  const availH = window.innerHeight - hud.offsetHeight - 116 - 60;
+  const scale = Math.max(0.4, Math.min(availW / GRID_W, availH / GRID_H));
+  const cssW = GRID_W * scale;
+  const cssH = GRID_H * scale;
+  canvas.style.width = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  renderer.ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
   renderer.ctx.imageSmoothingEnabled = true;
 }
 
