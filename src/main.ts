@@ -161,7 +161,7 @@ function showSectorIntro() {
   intro.innerHTML = `
     <h2>${SECTORS[engine.sectorIndex].name}</h2>
     <p>${(SECTORS[engine.sectorIndex] as any).subtitle}</p>`;
-  document.getElementById('game-wrap')!.appendChild(intro);
+  document.getElementById('canvas-holder')!.appendChild(intro);
   setTimeout(() => intro.classList.add('show'), 10);
   setTimeout(() => {
     intro.classList.remove('show');
@@ -179,7 +179,7 @@ function showOverlay(title: string, subtitle: string, msg: string, color: 'gold'
     <p class="subtitle">${subtitle}</p>
     <p>${msg}</p>
     <button class="btn primary" onclick="location.reload()">Rejouer</button>`;
-  document.getElementById('game-wrap')!.appendChild(ov);
+  document.getElementById('canvas-holder')!.appendChild(ov);
 }
 
 engine.onEvent = (e) => {
@@ -229,7 +229,7 @@ function showSectorPicker() {
     </button>`).join('');
   pick.innerHTML = `<h3>Choisir un secteur</h3><div class="pick-list">${buttons}</div>
     <p class="pick-note">Mode test : crédits bonus accordés selon le secteur</p>`;
-  document.getElementById('game-wrap')!.appendChild(pick);
+  document.getElementById('canvas-holder')!.appendChild(pick);
   pick.addEventListener('click', (ev) => {
     const target = ev.target as HTMLElement;
     const btn = target.closest('.pick-btn') as HTMLElement | null;
@@ -267,7 +267,7 @@ function showMetaPanel() {
     <div class="meta-list">${cards}</div>
     <p class="meta-note">Les points se gagnent en fin de partie (1 pt / 2 vagues atteintes, +10 en victoire). Les perks s'appliquent au prochain lancement.</p>
     <button id="btn-meta-close" class="btn">Fermer</button>`;
-  document.getElementById('game-wrap')!.appendChild(panel);
+  document.getElementById('canvas-holder')!.appendChild(panel);
   panel.querySelector('#btn-meta-close')!.addEventListener('click', () => panel.remove());
   panel.addEventListener('click', (ev) => {
     const btn = (ev.target as HTMLElement).closest('[data-perk]') as HTMLElement | null;
