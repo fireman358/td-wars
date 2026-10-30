@@ -22,7 +22,7 @@ interface Flake {
 
 export class Renderer {
   ctx: CanvasRenderingContext2D;
-  graphicsMode: '2d' | '2.5d' | 'iso' = '2.5d';
+  graphicsMode: '2d' | '2.5d' = '2.5d';
   selectedTower: Tower | null = null;
   buildPreview: { kindId: string; valid: boolean } | null = null;
   mouse: Vec = { x: -100, y: -100 };
@@ -58,13 +58,6 @@ export class Renderer {
     if (this.hyperT > 0) this.hyperT -= dt;
     const ctx = this.ctx;
     ctx.save();
-    if (this.graphicsMode === 'iso') {
-      // perspective isometrique : aplatissement vertical + deplacement diagonal
-      const scaleY = 0.62;
-      const skewX = -0.28;
-      const offY = 90;
-      ctx.transform(1, skewX * scaleY, 0, scaleY, 0, offY);
-    }
     this.drawTheme(ctx);
     this.drawPaths(ctx);
     if (this.graphicsMode !== '2d') this.drawProps(ctx);
@@ -607,29 +600,51 @@ export class Renderer {
   private drawTower(ctx: CanvasRenderingContext2D, t: Tower) {
     const { x, y } = t.pos;
     const recoil = t.flash > 0 ? -Math.min(3, t.flash * 24) : 0;
+    const rich = this.graphicsMode !== '2d';
     ctx.save();
-    if (this.graphicsMode !== '2d') {
+    if (rich) {
+      // faux-3D : ombre au sol + socle extrude (faces superieure et laterale)
       ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
       ctx.beginPath();
       ctx.ellipse(x + 2, y + 5, 16, 11, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.fillStyle = '#1c2a44';
+      ctx.beginPath();
+      ctx.ellipse(x, y + 4, 14, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#2c3f60';
+      ctx.beginPath();
+      ctx.ellipse(x, y, 14, 7, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(120, 160, 220, 0.5)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#131a28';
+      ctx.strokeStyle = 'rgba(120, 160, 220, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
     }
-    ctx.translate(x, y);
+    ctx.translate(x, y - (rich ? 7 : 0));
     ctx.fillStyle = this.graphicsMode === '2d' ? '#131a28' : '#1a2436';
     ctx.strokeStyle = 'rgba(120, 160, 220, 0.6)';
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(0, 0, 15, 0, Math.PI * 2);
+    ctx.arc(0, 0, 11, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    if (this.graphicsMode !== '2d') {
+    if (rich) {
       ctx.strokeStyle = 'rgba(60, 90, 140, 0.5)';
       ctx.beginPath();
-      ctx.arc(0, 0, 11, 0, Math.PI * 2);
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
       ctx.stroke();
+    } else {
+      ctx.fillStyle = 'rgba(70, 100, 150, 0.25)';
+      ctx.fillRect(-11, 10, 22, 4);
     }
-    ctx.fillStyle = 'rgba(70, 100, 150, 0.25)';
-    ctx.fillRect(-11, 10, 22, 4);
 
     ctx.rotate(t.angle);
     ctx.translate(recoil, 0);

@@ -205,7 +205,6 @@ function showSettingsPanel() {
         <select id="set-graphics">
           <option value="2.5d" ${settings.graphics === '2.5d' ? 'selected' : ''}>2.5D (détaillé)</option>
           <option value="2d" ${settings.graphics === '2d' ? 'selected' : ''}>2D (performance)</option>
-          ${engine.devMode ? `<option value="iso" ${settings.graphics === 'iso' ? 'selected' : ''}>Isométrique (expérimental)</option>` : ''}
         </select>
       </div>
     </div>
@@ -217,7 +216,7 @@ function showSettingsPanel() {
     sfx: (panel.querySelector('#set-sfx') as HTMLSelectElement).value === 'on',
     music: (panel.querySelector('#set-music') as HTMLSelectElement).value === 'on',
     volume: Number((panel.querySelector('#set-volume') as HTMLInputElement).value) / 100,
-    graphics: (panel.querySelector('#set-graphics') as HTMLSelectElement).value as '2d' | '2.5d' | 'iso',
+    graphics: (panel.querySelector('#set-graphics') as HTMLSelectElement).value as '2d' | '2.5d',
   });
   panel.querySelector('#set-sfx')!.addEventListener('change', apply);
   panel.querySelector('#set-music')!.addEventListener('change', apply);

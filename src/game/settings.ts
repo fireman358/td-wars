@@ -2,7 +2,7 @@ export interface Settings {
   sfx: boolean;
   music: boolean;
   volume: number;
-  graphics: '2d' | '2.5d' | 'iso';
+  graphics: '2d' | '2.5d';
 }
 
 const KEY = 'tdwars_settings_v1';
@@ -16,7 +16,7 @@ export function loadSettings(): Settings {
         sfx: p.sfx ?? true,
         music: p.music ?? true,
         volume: p.volume ?? 0.8,
-        graphics: p.graphics === '2d' ? '2d' : p.graphics === 'iso' ? 'iso' : '2.5d',
+        graphics: p.graphics === '2d' ? '2d' : '2.5d',
       };
     }
   } catch {
