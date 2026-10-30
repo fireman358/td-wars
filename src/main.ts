@@ -130,20 +130,22 @@ function showTowerInfo(t: Tower) {
     up = '<span style="color:#ffd23f">Niveau max</span>';
   }
   const incomeRow = k.kind === 'income' ? `<div class="row"><span class="k">Revenu</span><span>${s.income ?? 0} cr/s</span></div>` : '';
-  infoPanel.innerHTML = `
-    <h3>${k.name} — Nv ${t.level + 1}</h3>
-    <div class="row"><span class="k">Dégâts</span><span>${s.damage}</span></div>
+  const statsRows = k.kind === 'income'
+    ? incomeRow
+    : `<div class="row"><span class="k">Dégâts</span><span>${s.damage}</span></div>
     <div class="row"><span class="k">Portée</span><span>${s.range}</span></div>
-    ${incomeRow}
-    ${k.kind !== 'income' ? `<div class="row"><span class="k">Cadence</span><span>${s.fireRate}/s</span></div>` : ''}
+    <div class="row"><span class="k">Cadence</span><span>${s.fireRate}/s</span></div>
     ${k.kind === 'splash' ? `<div class="row"><span class="k">Zone</span><span>${s.splashRadius}</span></div>` : ''}
     ${k.kind === 'slow' ? `<div class="row"><span class="k">Ralentit</span><span>x${s.slowFactor}</span></div>` : ''}
-    ${k.kind === 'chain' ? `<div class="row"><span class="k">Cibles en chaîne</span><span>${s.chainTargets}</span></div>` : ''}
-    <div class="row"><span class="k">Cible</span><button id="btn-target" class="btn" style="padding:2px 8px;font-size:11px">${TARGET_LABELS[t.targetMode]}</button></div>
+    ${k.kind === 'chain' ? `<div class="row"><span class="k">Chaîne</span><span>${s.chainTargets}</span></div>` : ''}
+    <div class="row"><span class="k">Cible</span><button id="btn-target" class="btn" style="padding:2px 8px;font-size:11px">${TARGET_LABELS[t.targetMode]}</button></div>`;
+  infoPanel.innerHTML = `
+    <h3>${k.name} — Nv ${t.level + 1}</h3>
     <div class="actions">
       ${up}
       <button id="btn-sell" class="btn">Vendre ${t.sellValue()} cr</button>
-    </div>`;
+    </div>
+    ${statsRows}`;
   infoPanel.style.display = 'block';
   document.getElementById('btn-up')?.addEventListener('click', (ev) => {
     ev.stopPropagation();
