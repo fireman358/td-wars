@@ -58,6 +58,7 @@ export class Renderer {
     const ctx = this.ctx;
     this.drawTheme(ctx);
     this.drawPaths(ctx);
+    this.drawBase(ctx);
     this.drawRangePreview(ctx);
     for (const t of this.engine.towers) this.drawTower(ctx, t);
     for (const e of this.engine.enemies) this.drawEnemy(ctx, e);
@@ -67,6 +68,28 @@ export class Renderer {
     if (this.selectedTower) this.drawSelection(ctx);
     this.drawPortals(ctx);
     if (this.hyperT > 0) this.drawHyperspace(ctx, dt);
+    this.drawSaber(ctx);
+  }
+
+  private drawSaber(ctx: CanvasRenderingContext2D) {
+    if (!this.engine.saberActive) return;
+    const { x, y } = this.engine.saberPos;
+    const on = this.engine.saberEnergy > 0;
+    const glow = on ? 1 : 0.4;
+    ctx.save();
+    ctx.shadowColor = `rgba(120, 220, 255, ${glow})`;
+    ctx.shadowBlur = 16 * glow;
+    ctx.strokeStyle = on ? '#bfe9ff' : '#5a7a8a';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(x, y, 20, this.t * 7, this.t * 7 + Math.PI * 1.5);
+    ctx.stroke();
+    ctx.strokeStyle = on ? '#e8f6ff' : '#7a8a94';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, 14, this.t * 7, this.t * 7 + Math.PI * 1.5);
+    ctx.stroke();
+    ctx.restore();
   }
 
   private theme(): string {
@@ -312,18 +335,81 @@ export class Renderer {
       ctx.arc(x, y, 12, 0, Math.PI * 2);
       ctx.fill();
     });
-    const last = pts[0];
-    const end = last[last.length - 1];
-    const pulse = 0.5 + 0.5 * Math.sin(t * 3);
-    ctx.strokeStyle = `rgba(255, 210, 63, ${0.4 + pulse * 0.4})`;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(Math.min(end.x, GRID_W - 8), end.y, 10 + pulse * 4, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = '#ffd23f';
-    ctx.beginPath();
-    ctx.arc(Math.min(end.x, GRID_W - 8), end.y, 5, 0, Math.PI * 2);
-    ctx.fill();
+  }
+
+  private drawBase(ctx: CanvasRenderingContext2D) {
+    const pts = SECTORS[this.engine.sectorIndex].paths;
+    const end = pts[0][pts[0].length - 1];
+    const x = Math.min(end.x - 4, GRID_W - 46);
+    const y = end.y;
+    const pulse = 0.5 + 0.5 * Math.sin(this.t * 2.4);
+    ctx.save();
+    ctx.translate(x, y);
+    switch (this.theme()) {
+      case 'desert': {
+        ctx.fillStyle = '#c8b090';
+        ctx.fillRect(-30, -8, 60, 22);
+        ctx.fillStyle = '#8a7458';
+        ctx.beginPath();
+        ctx.arc(0, -8, 24, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = '#6e5a42';
+        ctx.fillRect(6, -4, 10, 14);
+        ctx.strokeStyle = `rgba(120, 190, 255, ${0.35 + pulse * 0.3})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 6, 27, 0.15 * Math.PI, 0.85 * Math.PI);
+        ctx.stroke();
+        break;
+      }
+      case 'ice': {
+        ctx.fillStyle = '#9fb4cc';
+        ctx.fillRect(-26, -12, 52, 26);
+        ctx.fillStyle = '#c9d8e8';
+        ctx.fillRect(-26, -12, 52, 7);
+        ctx.fillStyle = `rgba(90, 200, 255, ${0.5 + pulse * 0.3})`;
+        ctx.fillRect(10, -8, 8, 16);
+        break;
+      }
+      case 'forest': {
+        ctx.fillStyle = '#3d5a35';
+        ctx.fillRect(-18, -26, 36, 40);
+        ctx.fillStyle = '#2c4a28';
+        ctx.beginPath();
+        ctx.arc(0, -26, 26, Math.PI, 0);
+        ctx.fill();
+        ctx.fillStyle = `rgba(255, 200, 100, ${0.5 + pulse * 0.3})`;
+        ctx.fillRect(-10, -8, 8, 10);
+        ctx.fillRect(4, -8, 8, 10);
+        ctx.fillStyle = '#6b4a2c';
+        ctx.fillRect(-24, 8, 48, 6);
+        break;
+      }
+      case 'city': {
+        ctx.fillStyle = '#cfd6e8';
+        ctx.beginPath();
+        ctx.moveTo(-4, -44);
+        ctx.lineTo(28, 0);
+        ctx.lineTo(-4, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = '#8892b0';
+        ctx.beginPath();
+        ctx.moveTo(-4, -44);
+        ctx.lineTo(28, 0);
+        ctx.lineTo(-4, 0);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fillStyle = `rgba(120, 200, 255, ${0.35 + pulse * 0.35})`;
+        ctx.beginPath();
+        ctx.arc(2, -6, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#3a4358';
+        ctx.fillRect(-26, -6, 24, 20);
+        break;
+      }
+    }
+    ctx.restore();
   }
 
   private drawRangePreview(ctx: CanvasRenderingContext2D) {
@@ -451,6 +537,25 @@ export class Renderer {
         ctx.beginPath();
         ctx.arc(0, 0, 8, this.t * 2, this.t * 2 + 2);
         ctx.stroke();
+        break;
+      case 'extractor':
+        ctx.rotate(0);
+        ctx.fillStyle = '#2a2f38';
+        ctx.beginPath();
+        ctx.arc(0, 0, 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = c;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, 13, this.t * 1.5, this.t * 1.5 + 2.2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, 8, -this.t * 2, -this.t * 2 + 1.6);
+        ctx.stroke();
+        ctx.fillStyle = c;
+        ctx.beginPath();
+        ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+        ctx.fill();
         break;
       case 'rail':
         ctx.fillStyle = '#33363c';

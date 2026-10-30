@@ -1,4 +1,5 @@
 import { ALL_WAVES, AUTO_WAVE_DELAY, EARLY_BONUS_RATIO, ENEMIES, PATH_WIDTH, SECTORS, START_CREDITS, START_LIVES, TOWERS } from './config';
+import { loadMeta, saveMeta, type MetaState } from './meta';
 import { Enemy } from './enemy';
 import { buildPath, dist, distToPath, type PathGeom } from './geom';
 import { Sfx } from './sfx';
@@ -66,10 +67,21 @@ export class Engine {
 
   spawnQueue: QueuedSpawn[] = [];
   paths: PathGeom[] = [];
+  meta: MetaState = loadMeta();
+  saberPos: Vec = { x: -100, y: -100 };
+  saberActive = false;
+  saberEnergy = 100;
+  saberMax = 100;
+  saberCooldown = 0;
+  metaDirty = false;
 
   onEvent: (e: GameEvent) => void = () => {};
 
   constructor() {
+    this.credits += this.meta.perks.credits * 40;
+    this.lives += this.meta.perks.lives * 2;
+    this.saberMax = 100 * (1 + this.meta.perks.saber * 0.25);
+    this.saberEnergy = this.saberMax;
     this.loadSector(0);
   }
 
@@ -199,6 +211,15 @@ export class Engine {
     return true;
   }
 
+  buySpec(t: Tower, index: number): boolean {
+    if (!t.canSpec()) return false;
+    t.specIndex = index;
+    t.flash = 0.4;
+    this.sfx.build();
+    this.emit({ type: 'info' });
+    return true;
+  }
+
   upgradeTower(t: Tower): boolean {
     const cost = t.upgradeCost();
     if (!t.canUpgrade() || this.credits < cost) {
@@ -240,10 +261,39 @@ export class Engine {
     this.sfx.enabled = !this.sfx.enabled;
   }
 
+  updateSaber(d: number) {
+    if (this.saberActive && this.saberEnergy > 0) {
+      this.saberEnergy = Math.max(0, this.saberEnergy - d * 22);
+      for (const en of this.enemies) {
+        if (!en.alive) continue;
+        if (dist(this.saberPos, en.pos) < 22 + en.kind.radius) {
+          const earned = en.takeDamage(d * 95);
+          en.hitFlash = 0.1;
+          if (earned > 0) {
+            this.credits += earned;
+            this.emit({ type: 'credits' });
+            this.sfx.boom();
+          }
+        }
+      }
+    } else if (!this.saberActive) {
+      this.saberEnergy = Math.min(this.saberMax, this.saberEnergy + d * 9);
+    }
+  }
+
+  awardMeta(): void {
+    const reached = this.waveNumber;
+    const gained = Math.floor(reached / 2) + (this.lives > 0 ? 10 : 0);
+    this.meta.points += gained;
+    if (reached > this.meta.bestWave) this.meta.bestWave = reached;
+    saveMeta(this.meta);
+  }
+
   update(dt: number) {
     if (!this.running) return;
     const d = dt * this.speed;
     this.time += d;
+    this.updateSaber(d);
 
     if (this.autoTimer >= 0) {
       this.autoTimer -= d;
@@ -277,6 +327,7 @@ export class Engine {
       if (this.waveIndex >= sectorEnd) {
         if (this.sectorIndex >= SECTORS.length - 1) {
           this.running = false;
+          this.awardMeta();
           this.sfx.victory();
           this.emit({ type: 'victory' });
         } else {
@@ -316,6 +367,7 @@ export class Engine {
         this.emit({ type: 'lives' });
         if (this.lives <= 0 && this.running) {
           this.running = false;
+          this.awardMeta();
           this.sfx.defeat();
           this.emit({ type: 'defeat' });
         }
@@ -343,6 +395,19 @@ export class Engine {
   private updateTowers(d: number) {
     for (const t of this.towers) {
       if (t.flash > 0) t.flash -= d;
+      if (t.kind.kind === 'income') {
+        t.cooldown -= d;
+        if (t.cooldown <= 0) {
+          t.cooldown = 1;
+          const inc = t.stats.income ?? 0;
+          if (inc > 0) {
+            this.credits += inc;
+            this.emit({ type: 'credits' });
+            t.flash = 0.2;
+          }
+        }
+        continue;
+      }
       t.cooldown -= d;
       const target = this.pickTarget(t);
       if (target) {
@@ -356,6 +421,19 @@ export class Engine {
     }
   }
 
+  private effRange(t: Tower): number {
+    let r = t.stats.range;
+    let adjacent = false;
+    for (const o of this.towers) {
+      if (o !== t && o.kind.kind !== 'income' && o.id !== t.id && dist(o.pos, t.pos) < 46) {
+        adjacent = true;
+        break;
+      }
+    }
+    if (adjacent) r *= 1.1;
+    return r;
+  }
+
   private pickTarget(t: Tower): Enemy | null {
     let best: Enemy | null = null;
     let bestScore = Infinity;
@@ -365,7 +443,7 @@ export class Engine {
         continue;
       }
       const dd = dist(t.pos, e.pos);
-      if (dd > t.stats.range) continue;
+      if (dd > this.effRange(t)) continue;
       let score: number;
       switch (t.targetMode) {
         case 'close': score = dd; break;

@@ -2,6 +2,7 @@ import { ALL_WAVES, BUILD_ORDER, GRID_H, GRID_W, SECTORS, TOWERS } from './game/
 import { Engine } from './game/engine';
 import { TARGET_LABELS, type Tower } from './game/tower';
 import { Renderer } from './render';
+import { PERK_DEFS, perkCost, saveMeta, type PerkId } from './game/meta';
 import type { TowerKindId, Vec } from './game/types';
 
 const engine = new Engine();
@@ -17,6 +18,8 @@ const btnStart = document.getElementById('btn-start') as HTMLButtonElement;
 const btnSpeed = document.getElementById('btn-speed') as HTMLButtonElement;
 const btnSound = document.getElementById('btn-sound') as HTMLButtonElement;
 const btnSector = document.getElementById('btn-sector') as HTMLButtonElement;
+const btnMeta = document.getElementById('btn-meta') as HTMLButtonElement;
+const saberFill = document.getElementById('saber-fill')!;
 const buildBar = document.getElementById('build-bar')!;
 const infoPanel = document.getElementById('info-panel')!;
 
@@ -91,14 +94,23 @@ function showTowerInfo(t: Tower) {
   renderer.selectedTower = t;
   const k = TOWERS[t.id];
   const s = t.stats;
-  const up = t.canUpgrade()
-    ? `<button id="btn-up" class="btn primary">Améliorer ${t.upgradeCost()} cr</button>`
-    : '<span style="color:#ffd23f">Niveau max</span>';
+  let up: string;
+  if (t.canUpgrade()) {
+    up = `<button id="btn-up" class="btn primary">Améliorer ${t.upgradeCost()} cr</button>`;
+  } else if (t.canSpec()) {
+    up = `<div class="spec-choice"><button id="btn-spec0" class="btn primary" title="${k.specs![0].desc}">${k.specs![0].name}</button><button id="btn-spec1" class="btn" title="${k.specs![1].desc}">${k.specs![1].name}</button></div>`;
+  } else if (t.spec) {
+    up = `<span style="color:#7de64f">★ ${t.spec.name}</span>`;
+  } else {
+    up = '<span style="color:#ffd23f">Niveau max</span>';
+  }
+  const incomeRow = k.kind === 'income' ? `<div class="row"><span class="k">Revenu</span><span>${s.income ?? 0} cr/s</span></div>` : '';
   infoPanel.innerHTML = `
     <h3>${k.name} — Nv ${t.level + 1}</h3>
     <div class="row"><span class="k">Dégâts</span><span>${s.damage}</span></div>
     <div class="row"><span class="k">Portée</span><span>${s.range}</span></div>
-    <div class="row"><span class="k">Cadence</span><span>${s.fireRate}/s</span></div>
+    ${incomeRow}
+    ${k.kind !== 'income' ? `<div class="row"><span class="k">Cadence</span><span>${s.fireRate}/s</span></div>` : ''}
     ${k.kind === 'splash' ? `<div class="row"><span class="k">Zone</span><span>${s.splashRadius}</span></div>` : ''}
     ${k.kind === 'slow' ? `<div class="row"><span class="k">Ralentit</span><span>x${s.slowFactor}</span></div>` : ''}
     ${k.kind === 'chain' ? `<div class="row"><span class="k">Cibles en chaîne</span><span>${s.chainTargets}</span></div>` : ''}
@@ -111,6 +123,16 @@ function showTowerInfo(t: Tower) {
   document.getElementById('btn-up')?.addEventListener('click', (ev) => {
     ev.stopPropagation();
     engine.upgradeTower(t);
+    showTowerInfo(t);
+  });
+  document.getElementById('btn-spec0')?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    engine.buySpec(t, 0);
+    showTowerInfo(t);
+  });
+  document.getElementById('btn-spec1')?.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    engine.buySpec(t, 1);
     showTowerInfo(t);
   });
   document.getElementById('btn-target')!.addEventListener('click', (ev) => {
@@ -222,6 +244,54 @@ function showSectorPicker() {
   });
 }
 
+function showMetaPanel() {
+  const existing = document.getElementById('meta-panel');
+  existing?.remove();
+  const meta = engine.meta;
+  const cards = PERK_DEFS.map((p) => {
+    const lvl = meta.perks[p.id as PerkId];
+    const maxed = lvl >= p.max;
+    const cost = perkCost(lvl);
+    const canBuy = !maxed && meta.points >= cost;
+    return `<div class="perk-card">
+      <div class="p-name">${p.name}</div>
+      <div class="p-desc">${p.desc}</div>
+      <div class="p-lvl">Niveau ${lvl}/${p.max}</div>
+      <button class="btn primary" data-perk="${p.id}" ${canBuy ? '' : 'disabled'}>${maxed ? 'Max' : `Améliorer (${cost} pts)`}</button>
+    </div>`;
+  }).join('');
+  const panel = document.createElement('div');
+  panel.id = 'meta-panel';
+  panel.innerHTML = `<h3>PERKS DE COMMANDEMENT</h3>
+    <div class="meta-points">⭐ ${meta.points} points — record : vague ${meta.bestWave}</div>
+    <div class="meta-list">${cards}</div>
+    <p class="meta-note">Les points se gagnent en fin de partie (1 pt / 2 vagues atteintes, +10 en victoire). Les perks s'appliquent au prochain lancement.</p>
+    <button id="btn-meta-close" class="btn">Fermer</button>`;
+  document.getElementById('game-wrap')!.appendChild(panel);
+  panel.querySelector('#btn-meta-close')!.addEventListener('click', () => panel.remove());
+  panel.addEventListener('click', (ev) => {
+    const btn = (ev.target as HTMLElement).closest('[data-perk]') as HTMLElement | null;
+    if (btn) {
+      const id = btn.dataset.perk as PerkId;
+      const lvl = engine.meta.perks[id];
+      const cost = perkCost(lvl);
+      const def = PERK_DEFS.find((p) => p.id === id)!;
+      if (lvl < def.max && engine.meta.points >= cost) {
+        engine.meta.points -= cost;
+        engine.meta.perks[id] = lvl + 1;
+        saveMeta(engine.meta);
+        showMetaPanel();
+      }
+    }
+  });
+}
+
+btnMeta.addEventListener('click', () => {
+  const p = document.getElementById('meta-panel');
+  if (p) p.remove();
+  else showMetaPanel();
+});
+
 btnSector.addEventListener('click', () => {
   const pick = document.getElementById('sector-picker');
   if (pick) pick.remove();
@@ -234,8 +304,19 @@ btnSound.addEventListener('click', () => {
 });
 
 canvas.addEventListener('mousemove', (ev) => {
-  renderer.mouse = posFromEvent(ev);
+  const pos = posFromEvent(ev);
+  renderer.mouse = pos;
+  engine.saberPos = pos;
   renderer.buildPreview = selectedBuild ? { kindId: selectedBuild, valid: true } : null;
+});
+canvas.addEventListener('mousedown', (ev) => {
+  if (ev.button === 0) engine.saberActive = true;
+});
+window.addEventListener('mouseup', () => {
+  engine.saberActive = false;
+});
+window.addEventListener('blur', () => {
+  engine.saberActive = false;
 });
 canvas.addEventListener('mouseleave', () => {
   renderer.buildPreview = null;
@@ -279,6 +360,7 @@ function loop(now: number) {
     hudTick = 0;
     if (engine.autoTimer >= 0) refreshHud();
   }
+  saberFill.style.width = `${(engine.saberEnergy / engine.saberMax) * 100}%`;
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

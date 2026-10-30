@@ -127,6 +127,21 @@ export const SECTORS: SectorDefX[] = [
 ];
 
 export const TOWERS: Record<TowerKindId, TowerKind> = {
+  extractor: {
+    id: 'extractor',
+    name: 'Extracteur de moindal',
+    desc: 'Génère des crédits passivement. Ne tire pas.',
+    color: '#8f9aa8',
+    accent: '#cfd8e3',
+    kind: 'income',
+    tier: 0,
+    unlockSector: 0,
+    levels: [
+      { cost: 120, income: 14, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+      { cost: 100, income: 26, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+      { cost: 170, income: 45, damage: 0, range: 0, fireRate: 0, projectileSpeed: 0, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
+    ],
+  },
   plasma: {
     id: 'plasma',
     name: 'Blaster léger',
@@ -136,6 +151,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     color: '#3f7fd6',
     accent: '#8cd0ff',
     kind: 'single',
+    specs: [
+      { name: 'Double canon', desc: 'Cadence x1.6', mult: { fireRate: 1.6 } },
+      { name: 'Overcharge', desc: 'Dégâts x1.8', mult: { damage: 1.8 } },
+    ],
     levels: [
       { cost: 60, damage: 12, range: 110, fireRate: 2.2, projectileSpeed: 380, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
       { cost: 50, damage: 22, range: 125, fireRate: 2.6, projectileSpeed: 420, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
@@ -151,6 +170,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     color: '#d63f3f',
     accent: '#ff9a8a',
     kind: 'single',
+    specs: [
+      { name: 'Faisceau perçant', desc: 'Dégâts x1.6', mult: { damage: 1.6 } },
+      { name: 'Optique longue', desc: 'Portée x1.4, cadence x1.2', mult: { range: 1.4, fireRate: 1.2 } },
+    ],
     levels: [
       { cost: 110, damage: 34, range: 130, fireRate: 1.1, projectileSpeed: 620, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
       { cost: 90, damage: 62, range: 145, fireRate: 1.3, projectileSpeed: 660, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
@@ -166,6 +189,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     color: '#3fd6c9',
     accent: '#a8fff4',
     kind: 'slow',
+    specs: [
+      { name: 'Gel profond', desc: 'Ralentissement x0.6', mult: { slowFactor: 0.6 } },
+      { name: 'Champ large', desc: 'Portée et zone x1.35', mult: { range: 1.35, splashRadius: 1.35 } },
+    ],
     levels: [
       { cost: 80, damage: 6, range: 120, fireRate: 1.4, projectileSpeed: 340, splashRadius: 42, slowFactor: 0.55, slowDuration: 1.6, chainTargets: 0 },
       { cost: 70, damage: 10, range: 135, fireRate: 1.6, projectileSpeed: 360, splashRadius: 50, slowFactor: 0.45, slowDuration: 2.0, chainTargets: 0 },
@@ -181,6 +208,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     color: '#d69a3f',
     accent: '#ffe08a',
     kind: 'splash',
+    specs: [
+      { name: 'Charge fracassante', desc: 'Dégâts et zone x1.4', mult: { damage: 1.4, splashRadius: 1.4 } },
+      { name: 'Salve rapide', desc: 'Cadence x1.5', mult: { fireRate: 1.5 } },
+    ],
     levels: [
       { cost: 130, damage: 26, range: 140, fireRate: 0.8, projectileSpeed: 300, splashRadius: 60, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
       { cost: 110, damage: 48, range: 155, fireRate: 0.9, projectileSpeed: 320, splashRadius: 72, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
@@ -196,6 +227,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     color: '#a64fd6',
     accent: '#dcb0ff',
     kind: 'chain',
+    specs: [
+      { name: 'Arc forcé', desc: 'Cibles en chaîne +2', mult: { chainTargets: 2 } },
+      { name: 'Décharge lourde', desc: 'Dégâts x1.7', mult: { damage: 1.7 } },
+    ],
     levels: [
       { cost: 150, damage: 18, range: 115, fireRate: 1.2, projectileSpeed: 0, splashRadius: 90, slowFactor: 1, slowDuration: 0, chainTargets: 3 },
       { cost: 130, damage: 30, range: 125, fireRate: 1.4, projectileSpeed: 0, splashRadius: 100, slowFactor: 1, slowDuration: 0, chainTargets: 4 },
@@ -211,6 +246,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     color: '#e6e6e6',
     accent: '#bfe6ff',
     kind: 'single',
+    specs: [
+      { name: 'Conduits calibrés', desc: 'Cadence x1.5', mult: { fireRate: 1.5 } },
+      { name: 'Canon allongé', desc: 'Portée x1.3, dégâts x1.25', mult: { range: 1.3, damage: 1.25 } },
+    ],
     levels: [
       { cost: 200, damage: 90, range: 240, fireRate: 0.45, projectileSpeed: 900, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
       { cost: 170, damage: 160, range: 270, fireRate: 0.5, projectileSpeed: 950, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
@@ -226,6 +265,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     kind: 'slow',
     tier: 7,
     unlockSector: 3,
+    specs: [
+      { name: 'Pince renforcée', desc: 'Ralentissement x0.5', mult: { slowFactor: 0.5 } },
+      { name: 'Champ étendu', desc: 'Portée et durée x1.3', mult: { range: 1.3, slowDuration: 1.3 } },
+    ],
     levels: [
       { cost: 420, damage: 4, range: 150, fireRate: 1.0, projectileSpeed: 500, splashRadius: 55, slowFactor: 0.22, slowDuration: 2.2, chainTargets: 0 },
       { cost: 380, damage: 8, range: 170, fireRate: 1.2, projectileSpeed: 540, splashRadius: 65, slowFactor: 0.15, slowDuration: 2.6, chainTargets: 0 },
@@ -241,6 +284,10 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
     kind: 'single',
     tier: 8,
     unlockSector: 3,
+    specs: [
+      { name: 'Cœur surchargé', desc: 'Dégâts x1.5', mult: { damage: 1.5 } },
+      { name: 'Condensateurs', desc: 'Cadence x1.45', mult: { fireRate: 1.45 } },
+    ],
     levels: [
       { cost: 600, damage: 320, range: 260, fireRate: 0.22, projectileSpeed: 1100, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
       { cost: 520, damage: 560, range: 290, fireRate: 0.26, projectileSpeed: 1150, splashRadius: 0, slowFactor: 1, slowDuration: 0, chainTargets: 0 },
@@ -249,7 +296,7 @@ export const TOWERS: Record<TowerKindId, TowerKind> = {
   },
 };
 
-export const BUILD_ORDER: TowerKindId[] = ['plasma', 'ion', 'missile', 'laser', 'tesla', 'rail', 'tractor', 'axial'];
+export const BUILD_ORDER: TowerKindId[] = ['extractor', 'plasma', 'ion', 'missile', 'laser', 'tesla', 'rail', 'tractor', 'axial'];
 
 export const ENEMIES: Record<EnemyKindId, EnemyKind> = {
   drone: {

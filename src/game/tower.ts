@@ -18,6 +18,7 @@ export class Tower {
   kills = 0;
   flash = 0;
   targetMode: TargetMode = 'first';
+  specIndex: number | null = null;
 
   constructor(id: TowerKindId, kind: TowerKind, pos: Vec) {
     this.id = id;
@@ -27,11 +28,30 @@ export class Tower {
   }
 
   get stats() {
-    return this.kind.levels[this.level];
+    const base = { ...this.kind.levels[this.level] };
+    if (this.specIndex !== null && this.kind.specs) {
+      const m = this.kind.specs[this.specIndex].mult;
+      if (m.damage) base.damage = Math.round(base.damage * m.damage);
+      if (m.range) base.range = Math.round(base.range * m.range);
+      if (m.fireRate) base.fireRate = Math.round(base.fireRate * m.fireRate * 10) / 10;
+      if (m.splashRadius) base.splashRadius = Math.round(base.splashRadius * m.splashRadius);
+      if (m.slowFactor) base.slowFactor = Math.round(base.slowFactor * m.slowFactor * 100) / 100;
+      if (m.slowDuration) base.slowDuration = Math.round(base.slowDuration * m.slowDuration * 10) / 10;
+      if (m.chainTargets) base.chainTargets += m.chainTargets;
+    }
+    return base;
+  }
+
+  get spec() {
+    return this.specIndex !== null && this.kind.specs ? this.kind.specs[this.specIndex] : null;
   }
 
   canUpgrade(): boolean {
     return this.level < this.kind.levels.length - 1;
+  }
+
+  canSpec(): boolean {
+    return this.level >= this.kind.levels.length - 1 && this.specIndex === null && !!this.kind.specs;
   }
 
   upgradeCost(): number {

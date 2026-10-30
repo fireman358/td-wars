@@ -195,3 +195,54 @@ body {
 .pick-name { display: block; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
 .pick-sub { display: block; font-size: 11px; color: #7fa3d6; }
 .pick-note { font-size: 11px; color: #7fa3d6; font-style: italic; }
+
+#saber-bar {
+  display: inline-block;
+  width: 70px;
+  height: 10px;
+  background: #0d1526;
+  border: 1px solid #24406b;
+  border-radius: 5px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+#saber-fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #4fc3f7, #bfe9ff);
+  transition: width 0.1s linear;
+}
+.spec-choice { display: flex; gap: 6px; flex: 1; }
+.spec-choice .btn { flex: 1; padding: 6px 4px; font-size: 11px; }
+
+#meta-panel {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 6, 12, 0.88);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  z-index: 11;
+  backdrop-filter: blur(3px);
+}
+#meta-panel h3 { color: #ffd23f; letter-spacing: 2px; }
+#meta-panel .meta-points { color: #6fe08a; font-weight: 700; font-size: 15px; }
+.meta-list { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+.perk-card {
+  width: 190px;
+  padding: 14px;
+  background: rgba(13, 21, 38, 0.95);
+  border: 1px solid #24406b;
+  border-radius: 10px;
+  text-align: center;
+  color: #cfe3ff;
+}
+.perk-card .p-name { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.perk-card .p-desc { font-size: 11px; color: #7fa3d6; margin-bottom: 8px; min-height: 26px; }
+.perk-card .p-lvl { font-size: 12px; margin-bottom: 8px; }
+.perk-card button { width: 100%; }
+.perk-card button:disabled { opacity: 0.4; cursor: default; }
+.meta-note { font-size: 11px; color: #7fa3d6; font-style: italic; max-width: 480px; text-align: center; }

@@ -6,6 +6,7 @@ export interface Vec {
 }
 
 export type TowerKindId =
+  | 'extractor'
   | 'plasma'
   | 'ion'
   | 'missile'
@@ -27,6 +28,7 @@ export type EnemyKindId =
 
 export interface TowerLevel {
   cost: number;
+  income?: number;
   damage: number;
   range: number;
   fireRate: number;
@@ -43,10 +45,25 @@ export interface TowerKind {
   desc: string;
   color: string;
   accent: string;
-  kind: 'single' | 'splash' | 'slow' | 'chain';
+  kind: 'single' | 'splash' | 'slow' | 'chain' | 'income';
   tier: number;
   unlockSector: number;
   levels: TowerLevel[];
+  specs?: TowerSpec[];
+}
+
+export interface TowerSpec {
+  name: string;
+  desc: string;
+  mult: {
+    damage?: number;
+    range?: number;
+    fireRate?: number;
+    splashRadius?: number;
+    slowFactor?: number;
+    slowDuration?: number;
+    chainTargets?: number;
+  };
 }
 
 export interface EnemyKind {
