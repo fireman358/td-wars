@@ -12,6 +12,8 @@ const renderer = new Renderer(canvas, engine);
 
 const elCredits = document.getElementById('credits')!;
 const elLives = document.getElementById('lives')!;
+const elShield = document.getElementById('shield')!;
+const shieldStat = document.getElementById('shield-stat')!;
 const elWave = document.getElementById('wave')!;
 
 const elSector = document.getElementById('sector')!;
@@ -99,6 +101,10 @@ function refreshWavePreview() {
 function refreshHud() {
   elCredits.textContent = String(engine.credits);
   elLives.textContent = String(engine.lives);
+  if (engine.maxShield > 0) {
+    shieldStat.style.display = '';
+    elShield.textContent = `${engine.shield}/${engine.maxShield}`;
+  }
   elWave.textContent = `${engine.waveNumber}/${engine.totalWaves}`;
   elSector.textContent = SECTORS[engine.sectorIndex].name;
   const next = ALL_WAVES[engine.waveIndex + 1];
@@ -421,7 +427,7 @@ function showMetaPanel() {
     const canBuy = !maxed && meta.points >= cost;
     const current = lvl * p.perLevel;
     const next = maxed ? current : (lvl + 1) * p.perLevel;
-    const icons: Record<string, string> = { credits: '💠', lives: '🛡️', saber: '⚔️' };
+    const icons: Record<string, string> = { credits: '💠', lives: '🛡️', saber: '⚔️', shield: '🔵' };
     return `<div class="perk-card">
       <div class="p-icon">${icons[p.id] ?? '⭐'}</div>
       <div class="p-name">${p.name}</div>

@@ -50,6 +50,9 @@ export declare function pointOnPublic(p: PathGeom, d: number): Vec;
 export class Engine {
   credits = START_CREDITS;
   lives = START_LIVES;
+  shield = 0;
+  maxShield = 0;
+  shieldRegenTimer = 0;
   waveIndex = -1;
   waveActive = false;
   speed = 1;
@@ -82,6 +85,8 @@ export class Engine {
     this.lives += this.meta.perks.lives * 2;
     this.saberMax = 100 * (1 + this.meta.perks.saber * 0.25);
     this.saberEnergy = this.saberMax;
+    this.maxShield = this.meta.perks.shield * 3;
+    this.shield = this.maxShield;
     this.loadSector(0);
   }
 
@@ -294,6 +299,13 @@ export class Engine {
     const d = dt * this.speed;
     this.time += d;
     this.updateSaber(d);
+    if (this.maxShield > 0 && this.shield < this.maxShield) {
+      this.shieldRegenTimer += d;
+      if (this.shieldRegenTimer >= 12) {
+        this.shieldRegenTimer = 0;
+        this.shield = Math.min(this.maxShield, this.shield + 1);
+      }
+    }
 
     if (this.autoTimer >= 0) {
       this.autoTimer -= d;
@@ -362,7 +374,11 @@ export class Engine {
       if (e.dist >= path.total) {
         e.alive = false;
         e.reachedEnd = true;
-        this.lives -= e.kind.leak;
+        if (this.shield > 0) {
+          this.shield = Math.max(0, this.shield - e.kind.leak);
+        } else {
+          this.lives -= e.kind.leak;
+        }
         this.sfx.leak();
         this.emit({ type: 'lives' });
         if (this.lives <= 0 && this.running) {
