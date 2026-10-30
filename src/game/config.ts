@@ -355,9 +355,9 @@ function g(id: EnemyKindId, count: number, interval: number, delay: number, hpSc
 }
 
 function genWave(w: number, d: number, entries: number): Wave {
-  const m = (1 + d * 0.55) * (1 + w * 0.09);
+  const m = (1 + d * 0.55) * (1 + (w <= 4 ? w * 0.05 : 0.2 + (w - 4) * 0.095));
   const sp = 1 + d * 0.1 + w * 0.004;
-  const reward = 30 + w * 8 + d * 60;
+  const reward = 40 + w * 9 + d * 70;
   const boss = w % 5 === 0;
   let groups: WaveGroup[];
   let name: string;
@@ -383,19 +383,30 @@ function genWave(w: number, d: number, entries: number): Wave {
     }
   } else {
     const p = w % 5;
+    const early = w <= 4;
+    const mid = w > 4 && w <= 12;
     if (p === 1) {
-      name = w < 10 ? 'Patrouille légère' : 'Escadron rapide';
-      groups = [g(w % 6 === 1 ? 'drone' : 'fighter', 8 + Math.floor(w / 3), 0.55, 0, m), g('drone', 8, 0.7, 5, m * 1.1)];
+      name = early ? 'Patrouille légère' : w < 12 ? 'Escadron rapide' : 'Ruée éclair';
+      groups = early
+        ? [g('drone', 5 + w, 0.8, 0, m), g('soldier', 2 + Math.floor(w / 2), 1.2, 4, m)]
+        : [g(w % 6 === 1 ? 'drone' : 'fighter', 6 + Math.floor(w / 3), 0.55, 0, m), g('drone', 8, 0.7, 5, m * 1.1)];
     } else if (p === 2) {
       name = 'Troupes au sol';
-      groups = [g('soldier', 10 + Math.floor(w / 2), 0.5, 0, m), g(w % 4 === 2 ? 'drone' : 'fighter', 8, 0.6, 6, m)];
+      groups = early
+        ? [g('soldier', 4 + w, 0.9, 0, m), g('drone', 6, 0.9, 6, m)]
+        : [g('soldier', 10 + Math.floor(w / 2), 0.5, 0, m), g(w % 4 === 2 ? 'drone' : 'fighter', 8, 0.6, 6, m)];
     } else if (p === 3) {
-      name = 'Force de frappe';
-      groups = [g('fighter', 12 + Math.floor(w / 3), 0.45, 0, m), g('stealth', 5 + Math.floor(w / 6), 1.1, 5, m)];
+      name = early ? 'Premiers vols' : 'Force de frappe';
+      groups = early
+        ? [g('drone', 8, 0.6, 0, m), g('fighter', 2 + Math.floor(w / 2), 1.0, 5, m)]
+        : [g('fighter', 12 + Math.floor(w / 3), 0.45, 0, m), g('stealth', 5 + Math.floor(w / 6), 1.1, 5, m)];
     } else {
-      name = 'Blindage lourd';
-      groups = [g('tank', 3 + Math.floor(w / 5), 2, 0, m), g('soldier', 12, 0.5, 4, m), g(w % 3 === 4 ? 'healer' : 'stealth', 4, 1.2, 8, m)];
+      name = early ? 'Reconnaissance' : 'Blindage lourd';
+      groups = early
+        ? [g('drone', 10, 0.5, 0, m), g('soldier', 3 + Math.floor(w / 2), 1.1, 5, m)]
+        : [g('tank', 3 + Math.floor(w / 5), 2, 0, m), g('soldier', 12, 0.5, 4, m), g(w % 3 === 4 ? 'healer' : 'stealth', 4, 1.2, 8, m)];
     }
+    void mid;
   }
   return { name, entries, groups, reward };
 }
