@@ -91,6 +91,21 @@ function showHelp(force = false) {
       <h4>⭐ Perks</h4>
       En fin de partie vous gagnez des points (1 pt / 2 vagues, +10 en victoire) à dépenser dans
       la boutique ⭐ Perks : crédits, vies, énergie du sabre, bouclier de la base. Effets permanents.
+      <h4>💡 Subtilités</h4>
+      <b>Adjacence</b> : une tour gagne +10% de portée si une tour d'un <b>autre type</b> est
+      placée juste à côté — mélangez vos armes plutôt que d'empiler le même modèle.
+      <br><b>Bonus d'anticipation</b> : lancer la vague en avance rapporte des crédits
+      proportionnels au temps restant.
+      <br><b>Ennemis spéciaux</b> : les <b>furtifs</b> ne sont bien ciblés que par les canons
+      ionique et DEMP ; les <b>régénérateurs</b> soignent leurs alliés proches — éliminez-les
+      en premier (mode ciblage « plus fort ») ; les ennemis blindés ont un <b>bouclier d'énergie</b>
+      bleu (15% des PV) que les grosses frappes percent plus vite que la mitraille.
+      <br><b>Changement de secteur</b> : les tours qui chevauchent le nouveau labyrinthe sont
+      <b>remboursées à 100%</b> (sans la taxe de vente de 30%).
+      <br><b>Mode test</b> 🧪 : sautez directement à un secteur pour l'explorer, avec des
+      crédits bonus de départ.
+      <br><b>Rejouabilité</b> : le labyrinthe est <b>regénéré aléatoirement</b> à chaque partie —
+      chaque run demande de nouveaux placements.
     </div>
     <label class="help-check"><input type="checkbox" id="help-dont-show"> Ne plus afficher au lancement</label>
     <button id="btn-help-close" class="btn primary">Commencer la partie</button>`;
