@@ -397,7 +397,7 @@ body {
 #studio-splash {
   position: absolute;
   inset: 0;
-  background: #05070f;
+  background: #333333;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -407,19 +407,23 @@ body {
 }
 .splash-inner { text-align: center; }
 .splash-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
   font-size: 54px;
-  font-weight: 900;
-  letter-spacing: 14px;
-  color: #ffd23f;
-  text-shadow: 0 0 30px rgba(255, 210, 63, 0.5), 0 0 60px rgba(255, 210, 63, 0.25);
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: #ffffff;
   animation: splash-logo 2.6s ease forwards;
 }
+.splash-star { width: 56px; height: 56px; filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.7)); }
 .splash-sub {
   margin-top: 14px;
   font-size: 16px;
   letter-spacing: 6px;
   text-transform: uppercase;
-  color: #7fa3d6;
+  color: #38bdf8;
   animation: splash-sub 2.6s ease forwards;
 }
 @keyframes splash-logo {
@@ -446,15 +450,21 @@ body {
   gap: 10px;
   padding: 12px 0 4px;
   font-size: 12.5px;
-  color: #7fa3d6;
+  color: #9a9a9a;
+  width: 100%;
 }
-#site-footer a {
-  color: #ffd23f;
-  font-weight: 800;
-  letter-spacing: 2px;
+#site-footer .brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
   text-decoration: none;
-  transition: text-shadow 0.15s;
+  transition: filter 0.15s;
 }
-#site-footer a:hover { text-shadow: 0 0 12px rgba(255, 210, 63, 0.7); }
-#site-footer a.muted { color: #9fbde8; font-weight: 400; letter-spacing: 0; }
-#site-footer .sep { color: #3a5075; }
+#site-footer .brand-link:hover { filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8)); }
+.brand-star { width: 18px; height: 18px; }
+#site-footer a { color: #38bdf8; text-decoration: none; }
+#site-footer a.muted { color: #9a9a9a; font-weight: 400; }
+#site-footer .sep { color: #4a4a4a; }
