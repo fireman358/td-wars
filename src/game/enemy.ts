@@ -13,6 +13,7 @@ export class Enemy {
   pos: Vec = { x: 0, y: 0 };
   hitFlash = 0;
   phase = Math.random() * Math.PI * 2;
+  pathIndex = 0;
 
   constructor(kind: EnemyKind, hpScale: number, speedScale: number, startDist = 0) {
     this.kind = kind;

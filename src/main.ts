@@ -1,5 +1,6 @@
-import { BUILD_ORDER, GRID_H, GRID_W, TOWERS, WAVES } from './game/config';
+import { ALL_WAVES, BUILD_ORDER, GRID_H, GRID_W, SECTORS, TOWERS } from './game/config';
 import { Engine } from './game/engine';
+import type { Tower } from './game/tower';
 import { Renderer } from './render';
 import type { TowerKindId, Vec } from './game/types';
 
@@ -9,7 +10,8 @@ const renderer = new Renderer(canvas, engine);
 
 const elCredits = document.getElementById('credits')!;
 const elLives = document.getElementById('lives')!;
-const elWave = document.getElementById('wave')!;
+
+const elSector = document.getElementById('sector')!;
 const btnStart = document.getElementById('btn-start') as HTMLButtonElement;
 const btnSpeed = document.getElementById('btn-speed') as HTMLButtonElement;
 const btnSound = document.getElementById('btn-sound') as HTMLButtonElement;
@@ -29,8 +31,18 @@ function posFromEvent(ev: MouseEvent): Vec {
 function refreshHud() {
   elCredits.textContent = String(engine.credits);
   elLives.textContent = String(engine.lives);
-  elWave.textContent = String(engine.waveNumber);
-  btnStart.disabled = !engine.canStartWave();
+  elSector.textContent = SECTORS[engine.sectorIndex].name;
+  const next = ALL_WAVES[engine.waveIndex + 1];
+  if (engine.autoTimer >= 0) {
+    btnStart.textContent = `⏩ ${Math.ceil(engine.autoTimer)}s (+${Math.ceil(engine.autoTimer * 0.6 * 4)} cr)`;
+    btnStart.disabled = false;
+  } else if (next) {
+    btnStart.textContent = `Lancer la vague ${engine.waveNumber + 1}`;
+    btnStart.disabled = !engine.canStartWave();
+  } else {
+    btnStart.textContent = '—';
+    btnStart.disabled = true;
+  }
   btnSpeed.textContent = `x${engine.speed}`;
   refreshBuildBar();
 }
@@ -62,12 +74,12 @@ function refreshBuildBar() {
   }
 }
 
-function showTowerInfo(t: import('./game/tower').Tower) {
+function showTowerInfo(t: Tower) {
   renderer.selectedTower = t;
   const k = TOWERS[t.id];
   const s = t.stats;
   const up = t.canUpgrade()
-    ? `<button id="btn-up" class="btn primary">${t.upgradeCost()} cr</button>`
+    ? `<button id="btn-up" class="btn primary">Améliorer ${t.upgradeCost()} cr</button>`
     : '<span style="color:#ffd23f">Niveau max</span>';
   infoPanel.innerHTML = `
     <h3>${k.name} — Nv ${t.level + 1}</h3>
@@ -82,8 +94,7 @@ function showTowerInfo(t: import('./game/tower').Tower) {
       <button id="btn-sell" class="btn">Vendre ${t.sellValue()} cr</button>
     </div>`;
   infoPanel.style.display = 'block';
-  const btnUp = document.getElementById('btn-up');
-  btnUp?.addEventListener('click', (ev) => {
+  document.getElementById('btn-up')?.addEventListener('click', (ev) => {
     ev.stopPropagation();
     engine.upgradeTower(t);
     showTowerInfo(t);
@@ -99,6 +110,22 @@ function showTowerInfo(t: import('./game/tower').Tower) {
 function hideInfo() {
   infoPanel.style.display = 'none';
   renderer.selectedTower = null;
+}
+
+function showSectorIntro() {
+  const existing = document.getElementById('sector-intro');
+  existing?.remove();
+  const intro = document.createElement('div');
+  intro.id = 'sector-intro';
+  intro.innerHTML = `
+    <h2>${SECTORS[engine.sectorIndex].name}</h2>
+    <p>${SECTORS[engine.sectorIndex].paths.length} entrée${SECTORS[engine.sectorIndex].paths.length > 1 ? 's' : ''} — ${SECTORS[engine.sectorIndex].waves.length} vagues</p>`;
+  document.getElementById('game-wrap')!.appendChild(intro);
+  setTimeout(() => intro.classList.add('show'), 10);
+  setTimeout(() => {
+    intro.classList.remove('show');
+    setTimeout(() => intro.remove(), 600);
+  }, 3200);
 }
 
 function showOverlay(title: string, subtitle: string, msg: string, color: 'gold' | 'red') {
@@ -118,9 +145,12 @@ engine.onEvent = (e) => {
   switch (e.type) {
     case 'credits':
     case 'lives':
+    case 'wave':
       refreshHud();
       break;
-    case 'wave':
+    case 'sector':
+      elSector.textContent = SECTORS[engine.sectorIndex].name;
+      showSectorIntro();
       refreshHud();
       break;
     case 'speed':
@@ -130,10 +160,10 @@ engine.onEvent = (e) => {
       refreshBuildBar();
       break;
     case 'victory':
-      showOverlay('LA GALAXIE EST SAUVÉE', 'Victoire', `Vous avez survécu aux ${WAVES.length} vagues avec ${engine.lives} vies restantes.`, 'gold');
+      showOverlay('LA GALAXIE EST SAUVÉE', 'Victoire totale', `Vous avez vaincu les ${ALL_WAVES.length} vagues sur les ${SECTORS.length} secteurs, avec ${engine.lives} vies restantes.`, 'gold');
       break;
     case 'defeat':
-      showOverlay('BASE DÉTRUITE', 'Défaite', `La flotte ennemie a percé vos défenses à la vague ${engine.waveNumber}.`, 'red');
+      showOverlay('BASE DÉTRUITE', 'Défaite', `La flotte du Nova Empire a percé vos défenses à la vague ${engine.waveNumber} du ${SECTORS[engine.sectorIndex].name}.`, 'red');
       break;
     case 'info':
       if (renderer.selectedTower) showTowerInfo(renderer.selectedTower);
@@ -153,11 +183,7 @@ btnSound.addEventListener('click', () => {
 
 canvas.addEventListener('mousemove', (ev) => {
   renderer.mouse = posFromEvent(ev);
-  if (selectedBuild) {
-    renderer.buildPreview = { kindId: selectedBuild, valid: true };
-  } else {
-    renderer.buildPreview = null;
-  }
+  renderer.buildPreview = selectedBuild ? { kindId: selectedBuild, valid: true } : null;
 });
 canvas.addEventListener('mouseleave', () => {
   renderer.buildPreview = null;
@@ -187,13 +213,20 @@ canvas.addEventListener('click', (ev) => {
 });
 
 refreshHud();
+showSectorIntro();
 
 let last = performance.now();
+let hudTick = 0;
 function loop(now: number) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   engine.update(dt);
-  renderer.draw();
+  renderer.draw(dt);
+  hudTick += dt;
+  if (hudTick > 0.25) {
+    hudTick = 0;
+    if (engine.autoTimer >= 0) refreshHud();
+  }
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

@@ -70,6 +70,13 @@ export interface WaveGroup {
 
 export interface Wave {
   name: string;
+  entries: number;
   groups: WaveGroup[];
   reward: number;
+}
+
+export interface SectorDef {
+  name: string;
+  paths: Vec[][];
+  waves: Wave[];
 }

@@ -1,4 +1,4 @@
-import { ENEMIES, MAX_WAVES, PATH, PATH_WIDTH, START_CREDITS, START_LIVES, TOWERS, WAVES } from './config';
+import { ALL_WAVES, AUTO_WAVE_DELAY, EARLY_BONUS_RATIO, ENEMIES, PATH_WIDTH, SECTORS, START_CREDITS, START_LIVES, TOWERS } from './config';
 import { Enemy } from './enemy';
 import { buildPath, dist, distToPath, type PathGeom } from './geom';
 import { Sfx } from './sfx';
@@ -32,11 +32,19 @@ export interface Effect {
 }
 
 export type GameEvent =
-  | { type: 'credits' | 'lives' | 'wave' | 'speed' }
-  | { type: 'buildbar' }
-  | { type: 'info' }
+  | { type: 'credits' | 'lives' | 'wave' | 'speed' | 'buildbar' | 'info' | 'sector' }
   | { type: 'victory' }
   | { type: 'defeat' };
+
+interface QueuedSpawn {
+  kindId: EnemyKindId;
+  at: number;
+  hpScale: number;
+  speedScale: number;
+  pathIndex: number;
+}
+
+export declare function pointOnPublic(p: PathGeom, d: number): Vec;
 
 export class Engine {
   credits = START_CREDITS;
@@ -46,6 +54,8 @@ export class Engine {
   speed = 1;
   running = true;
   time = 0;
+  sectorIndex = 0;
+  autoTimer = -1;
   sfx = new Sfx();
 
   towers: Tower[] = [];
@@ -54,53 +64,94 @@ export class Engine {
   arcs: ChainArc[] = [];
   effects: Effect[] = [];
 
-  spawnQueue: { kindId: EnemyKindId; at: number; hpScale: number; speedScale: number }[] = [];
-  path: PathGeom;
+  spawnQueue: QueuedSpawn[] = [];
+  paths: PathGeom[] = [];
 
   onEvent: (e: GameEvent) => void = () => {};
 
   constructor() {
-    this.path = buildPath(PATH);
+    this.loadSector(0);
   }
 
-  emit(e: GameEvent) { this.onEvent(e); }
+  loadSector(index: number) {
+    this.sectorIndex = index;
+    this.paths = SECTORS[index].paths.map(p => buildPath(p));
+    this.waveIndex = this.sectorStartWave(index) - 1;
+    this.waveActive = false;
+    this.spawnQueue = [];
+    this.autoTimer = -1;
+    this.emit({ type: 'sector' });
+  }
+
+  sectorStartWave(index: number): number {
+    let n = 0;
+    for (let i = 0; i < index; i++) n += SECTORS[i].waves.length;
+    return n;
+  }
+
+  get currentWave() {
+    return ALL_WAVES[this.waveIndex] ?? null;
+  }
+
+  get sector(): (typeof SECTORS)[number] {
+    return SECTORS[this.sectorIndex];
+  }
 
   get waveNumber(): number {
     return this.waveIndex + 1;
   }
 
+  get totalWaves(): number {
+    return ALL_WAVES.length;
+  }
+
+  emit(e: GameEvent) { this.onEvent(e); }
+
   canStartWave(): boolean {
-    return !this.waveActive && this.waveIndex < WAVES.length - 1 && this.running;
+    return !this.waveActive && this.waveIndex < ALL_WAVES.length - 1 && this.running;
   }
 
   startWave() {
     if (!this.canStartWave()) return;
+    let earlyBonus = 0;
+    if (this.autoTimer > 0) {
+      earlyBonus = Math.ceil(this.autoTimer * EARLY_BONUS_RATIO * 4);
+      this.credits += earlyBonus;
+      this.autoTimer = -1;
+    }
     this.waveIndex++;
-    const wave = WAVES[this.waveIndex];
+    const wave = ALL_WAVES[this.waveIndex];
+    const entries = Math.min(wave.entries, this.paths.length);
     this.spawnQueue = [];
     for (const grp of wave.groups) {
       for (let i = 0; i < grp.count; i++) {
         const at = this.time + grp.delay + i * grp.interval;
-        const lastDelay = grp.delay + (grp.count - 1) * grp.interval;
-        void lastDelay;
-        this.spawnQueue.push({ kindId: grp.id, at, hpScale: grp.hpScale, speedScale: grp.speedScale });
+        this.spawnQueue.push({
+          kindId: grp.id,
+          at,
+          hpScale: grp.hpScale,
+          speedScale: grp.speedScale,
+          pathIndex: i % entries,
+        });
       }
     }
     this.spawnQueue.sort((a, b) => a.at - b.at);
     this.waveActive = true;
     this.sfx.waveStart();
+    this.emit({ type: 'credits' });
     this.emit({ type: 'wave' });
+  }
+
+  private spawn(s: QueuedSpawn) {
+    const sc = this.waveScaling();
+    const e = new Enemy(ENEMIES[s.kindId], s.hpScale * sc.hp, s.speedScale * sc.speed);
+    e.pathIndex = s.pathIndex;
+    this.enemies.push(e);
   }
 
   private waveScaling(): { hp: number; speed: number } {
     const w = Math.max(0, this.waveIndex);
     return { hp: 1 + w * 0.08, speed: 1 + Math.min(0.5, w * 0.015) };
-  }
-
-  private spawn(kindId: EnemyKindId, hpScale: number, speedScale: number) {
-    const sc = this.waveScaling();
-    const e = new Enemy(ENEMIES[kindId], hpScale * sc.hp, speedScale * sc.speed);
-    this.enemies.push(e);
   }
 
   placeTower(kindId: TowerKindId, pos: Vec): boolean {
@@ -110,9 +161,11 @@ export class Engine {
       this.sfx.error();
       return false;
     }
-    if (distToPath(this.path, pos) < PATH_WIDTH / 2 + 14) {
-      this.sfx.error();
-      return false;
+    for (const p of this.paths) {
+      if (distToPath(p, pos) < PATH_WIDTH / 2 + 14) {
+        this.sfx.error();
+        return false;
+      }
     }
     if (this.towers.some(t => dist(t.pos, pos) < 30)) {
       this.sfx.error();
@@ -173,10 +226,18 @@ export class Engine {
     const d = dt * this.speed;
     this.time += d;
 
+    if (this.autoTimer >= 0) {
+      this.autoTimer -= d;
+      if (this.autoTimer <= 0) {
+        this.autoTimer = -1;
+        this.startWave();
+      }
+    }
+
     for (let i = this.spawnQueue.length - 1; i >= 0; i--) {
       const s = this.spawnQueue[i];
       if (this.time >= s.at) {
-        this.spawn(s.kindId, s.hpScale, s.speedScale);
+        this.spawn(s);
         this.spawnQueue.splice(i, 1);
       }
     }
@@ -188,15 +249,22 @@ export class Engine {
 
     if (this.waveActive && this.spawnQueue.length === 0 && this.enemies.length === 0) {
       this.waveActive = false;
-      const wave = WAVES[this.waveIndex];
+      const wave = ALL_WAVES[this.waveIndex];
       this.credits += wave.reward;
       this.emit({ type: 'credits' });
       this.emit({ type: 'wave' });
       this.emit({ type: 'buildbar' });
-      if (this.waveIndex >= MAX_WAVES - 1 || this.waveIndex >= WAVES.length - 1) {
+      if (this.waveIndex >= ALL_WAVES.length - 1) {
         this.running = false;
         this.sfx.victory();
         this.emit({ type: 'victory' });
+      } else if ((this.waveIndex + 1) % 25 === 0) {
+        this.loadSector(this.sectorIndex + 1);
+        this.emit({ type: 'credits' });
+        this.emit({ type: 'wave' });
+        this.emit({ type: 'buildbar' });
+      } else {
+        this.autoTimer = AUTO_WAVE_DELAY;
       }
     }
   }
@@ -206,7 +274,8 @@ export class Engine {
     for (const e of this.enemies) {
       if (!e.alive) continue;
       e.dist += e.speed * d;
-      e.pos = this.pointAtSafe(e.dist);
+      const path = this.paths[e.pathIndex];
+      e.pos = this.pointOn(path, e.dist);
       if (e.slowUntil > 0) {
         e.slowUntil -= d;
         if (e.slowUntil <= 0) e.slowFactor = 1;
@@ -217,7 +286,7 @@ export class Engine {
           e.hp = Math.min(e.maxHp, e.hp + (h.kind.healAura ?? 0) * d);
         }
       }
-      if (e.dist >= this.path.total) {
+      if (e.dist >= path.total) {
         e.alive = false;
         e.reachedEnd = true;
         this.lives -= e.kind.leak;
@@ -233,9 +302,12 @@ export class Engine {
     this.enemies = this.enemies.filter(e => e.alive);
   }
 
-  private pointAt(d: number): Vec {
-    const p = this.path;
-    const t = Math.max(0, Math.min(p.total, d));
+  pointOnPublic(p: PathGeom, dd: number): Vec {
+    return this.pointOn(p, dd);
+  }
+
+  private pointOn(p: PathGeom, dd: number): Vec {
+    const t = Math.max(0, Math.min(p.total, dd));
     for (let i = 0; i < p.cumLen.length - 1; i++) {
       if (t <= p.cumLen[i + 1]) {
         const s = t - p.cumLen[i];
@@ -246,21 +318,15 @@ export class Engine {
     return { x: last.x, y: last.y };
   }
 
-  private pointAtSafe(d: number): Vec {
-    return this.pointAt(d);
-  }
-
   private updateTowers(d: number) {
     for (const t of this.towers) {
       if (t.flash > 0) t.flash -= d;
       t.cooldown -= d;
-      const s = t.stats;
       const target = this.pickTarget(t);
       if (target) {
-        const desired = Math.atan2(target.pos.y - t.pos.y, target.pos.x - t.pos.x);
-        t.angle = desired;
+        t.angle = Math.atan2(target.pos.y - t.pos.y, target.pos.x - t.pos.x);
         if (t.cooldown <= 0) {
-          t.cooldown = 1 / s.fireRate;
+          t.cooldown = 1 / t.stats.fireRate;
           t.flash = Math.max(t.flash, 0.08);
           this.fire(t, target);
         }
