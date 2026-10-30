@@ -412,14 +412,16 @@ export class Engine {
     for (const t of this.towers) {
       if (t.flash > 0) t.flash -= d;
       if (t.kind.kind === 'income') {
-        t.cooldown -= d;
-        if (t.cooldown <= 0) {
-          t.cooldown = 1;
-          const inc = t.stats.income ?? 0;
-          if (inc > 0) {
-            this.credits += inc;
-            this.emit({ type: 'credits' });
-            t.flash = 0.2;
+        if (this.waveActive) {
+          t.cooldown -= d;
+          if (t.cooldown <= 0) {
+            t.cooldown = 1;
+            const inc = t.stats.income ?? 0;
+            if (inc > 0) {
+              this.credits += inc;
+              this.emit({ type: 'credits' });
+              t.flash = 0.2;
+            }
           }
         }
         continue;
